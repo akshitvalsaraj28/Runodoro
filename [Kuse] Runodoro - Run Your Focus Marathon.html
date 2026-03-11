@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Runodoro - Run Your Focus Marathon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .timer-display {
+            font-size: 96px;
+            font-weight: 800;
+            color: #667eea;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .mode-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            color: #666;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .mode-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-btn {
+            padding: 16px 48px;
+            border-radius: 16px;
+            border: none;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(56, 239, 125, 0.4);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(56, 239, 125, 0.5);
+        }
+
+        .pause-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .pause-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.5);
+        }
+
+        .reset-btn {
+            background: #f0f0f0;
+            color: #666;
+            padding: 12px 32px;
+            font-size: 14px;
+        }
+
+        .reset-btn:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .track-container {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(to bottom, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 24px 0;
+            border: 3px solid #81c784;
+            transform-style: preserve-3d;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2), inset 0 -4px 8px rgba(0,0,0,0.1);
+        }
+
+        .track-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent);
+            border-radius: 16px 16px 0 0;
+            pointer-events: none;
+        }
+
+        .track-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                #fff 0px,
+                #fff 20px,
+                transparent 20px,
+                transparent 40px
+            );
+            transform: translateY(-50%);
+        }
+
+        .track-progress {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transform: translateY(-50%);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .runner {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            transition: left 0.5s ease;
+            z-index: 10;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)) drop-shadow(0 0 20px rgba(255,255,255,0.3));
+        }
+
+        .runner::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 12px;
+            background: radial-gradient(ellipse, rgba(0,0,0,0.5), transparent);
+            border-radius: 50%;
+            animation: shadowPulse 0.6s infinite;
+            z-index: -1;
+        }
+
+        .runner.running {
+            animation: run 0.6s steps(2) infinite;
+        }
+
+        @keyframes run {
+            0% { transform: translate(-50%, -50%) rotateY(0deg) scale(1); }
+            25% { transform: translate(-50%, -60%) rotateY(-8deg) scale(1.05); }
+            50% { transform: translate(-50%, -65%) rotateY(0deg) scale(1.08); }
+            75% { transform: translate(-50%, -60%) rotateY(8deg) scale(1.05); }
+            100% { transform: translate(-50%, -50%) rotateY(0deg) scale(1); }
+        }
+
+        @keyframes shadowPulse {
+            0%, 100% { transform: scaleX(1) scaleY(0.3); opacity: 0.3; }
+            50% { transform: scaleX(1.3) scaleY(0.2); opacity: 0.5; }
+        }
+
+        .finish-flag {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 36px;
+        }
+
+        .start-flag {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 36px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 8px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .achievement-badge {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-badge.unlocked {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            box-shadow: 0 4px 12px rgba(253, 203, 110, 0.4);
+        }
+
+        .achievement-badge.locked {
+            opacity: 0.5;
+            filter: grayscale(1);
+        }
+
+        .achievement-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .achievement-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border: 2px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+
+        .leaderboard-item.current-user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .rank {
+            font-size: 24px;
+            font-weight: 800;
+            width: 40px;
+        }
+
+        .progress-ring {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s ease;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .goal-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            color: #666;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .goal-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .goal-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            z-index: 1000;
+            animation: celebrate 1s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes celebrate {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .quote-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quote-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+            background-size: 200% 100%;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .quote-text {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+            font-style: italic;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .quote-author {
+            font-size: 14px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .goal-info {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .terrain-btn {
+            padding: 16px 20px;
+            border-radius: 16px;
+            border: 3px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 140px;
+        }
+
+        .terrain-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .terrain-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .terrain-icon {
+            font-size: 36px;
+        }
+
+        .terrain-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .event-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(245, 87, 108, 0.4);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: eventGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes eventGlow {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-20%, -20%); }
+        }
+
+        .event-badge {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .avatar-customizer {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .avatar-preview {
+            text-align: center;
+            padding: 24px;
+            background: linear-gradient(to bottom, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 16px;
+            border: 3px solid #81c784;
+            margin-bottom: 16px;
+        }
+
+        .avatar-display {
+            font-size: 80px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .customization-section {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .customization-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .option-btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .option-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .option-btn.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .option-btn.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 16px;
+        }
+
+        .premium-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .premium-badge.free {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+        }
+
+        .premium-badge.trial {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .premium-badge.premium {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .premium-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .premium-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .premium-overlay.active {
+            display: flex;
+        }
+
+        .premium-modal {
+            background: white;
+            border-radius: 24px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 32px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .pricing-card {
+            border: 3px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 32px 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+        }
+
+        .pricing-card.featured {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: relative;
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffd700;
+            color: #333;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .price {
+            font-size: 48px;
+            font-weight: 800;
+            margin: 16px 0;
+        }
+
+        .price-period {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 24px 0;
+            text-align: left;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .pricing-card.featured .feature-list li {
+            border-bottom-color: rgba(255,255,255,0.2);
+        }
+
+        .select-plan-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+        }
+
+        .select-plan-btn.free {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .select-plan-btn.premium {
+            background: white;
+            color: #667eea;
+        }
+
+        .select-plan-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .ad-banner {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 24px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .premium-locked {
+            opacity: 0.5;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .premium-locked::after {
+            content: '⭐ Premium Only';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(102, 126, 234, 0.95);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .timer-display {
+                font-size: 64px;
+            }
+            
+            .control-btn {
+                padding: 12px 32px;
+                font-size: 16px;
+            }
+            
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .quote-text {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="premium-badge free" id="premiumBadge">
+            📱 Free Plan
+        </div>
+
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-extrabold text-white mb-2" style="text-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 40px rgba(255,255,255,0.2);">🏃 RUNODORO</h1>
+            <p class="text-xl text-white opacity-90 font-medium">Run Your Focus Marathon</p>
+        </header>
+
+        <div class="ad-banner" id="adBanner">
+            <div class="text-sm font-bold text-gray-600 mb-1">📢 Advertisement</div>
+            <div class="text-gray-700">Upgrade to Premium for an ad-free experience! ⭐</div>
+        </div>
+
+        <div class="quote-card" id="quoteCard">
+            <div class="quote-text" id="quoteText">"The secret of getting ahead is getting started."</div>
+            <div class="quote-author" id="quoteAuthor">— Mark Twain</div>
+        </div>
+
+        <div class="glass-card mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">🎯 Choose Your Daily Goal</h3>
+            <div class="flex flex-wrap justify-center gap-3 mb-4">
+                <button class="goal-btn" data-goal="5" data-sessions="2-5">🏃 Light Day (5 km)</button>
+                <button class="goal-btn" data-goal="10" data-sessions="3-7">💪 Productive (10 km)</button>
+                <button class="goal-btn active" data-goal="21" data-sessions="7-14">🔥 Deep Work (21 km)</button>
+                <button class="goal-btn" data-goal="42" data-sessions="14-28">🏆 Marathon (42 km)</button>
+            </div>
+            <div class="goal-info" id="goalInfo">
+                📊 Goal: 21 km | Suggested: 7-14 sessions | Any mode combination works!
+            </div>
+        </div>
+
+        <div class="glass-card mb-6">
+            <div class="flex flex-wrap justify-center gap-3 mb-8">
+                <button class="mode-btn active" data-mode="standard" data-time="25" data-distance="3">
+                    ⚡ Standard<br><span class="text-xs">25 min = 3 km</span>
+                </button>
+                <button class="mode-btn" data-mode="sprint" data-time="15" data-distance="1">
+                    🚀 Sprint<br><span class="text-xs">15 min = 1 km</span>
+                </button>
+                <button class="mode-btn" data-mode="deep" data-time="50" data-distance="5">
+                    🧠 Deep Focus<br><span class="text-xs">50 min = 5 km</span>
+                </button>
+            </div>
+
+            <div class="timer-display mb-4" id="timerDisplay">25:00</div>
+            
+            <div class="text-center mb-6">
+                <div class="text-2xl font-bold text-gray-700 mb-2" id="sessionInfo">Ready to Start</div>
+                <div class="text-lg text-gray-600" id="modeInfo">Standard Mode - 3 km per session</div>
+            </div>
+
+            <div class="flex justify-center gap-4 flex-wrap">
+                <button class="control-btn start-btn" id="startBtn">Start</button>
+                <button class="control-btn pause-btn hidden" id="pauseBtn">Pause</button>
+                <button class="control-btn reset-btn" id="resetBtn">Reset</button>
+            </div>
+        </div>
+
+        <div class="glass-card mb-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">🏃 Today's Marathon Progress</h3>
+            
+            <div class="track-container">
+                <div class="start-flag">🚩</div>
+                <div class="track-line"></div>
+                <div class="track-progress" id="trackProgress"></div>
+                <div class="runner" id="runner">🏃</div>
+                <div class="finish-flag">🏁</div>
+            </div>
+
+            <div class="text-center mb-4">
+                <div class="text-3xl font-bold text-gray-800" id="distanceDisplay">0 km / 21 km</div>
+                <div class="text-lg text-gray-600" id="progressPercent">0% Complete</div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="stat-card">
+                    <div class="stat-label">Distance Today</div>
+                    <div class="stat-value" id="todayDistance">0 km</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Focus Time</div>
+                    <div class="stat-value" id="todayTime">0 min</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Sessions</div>
+                    <div class="stat-value" id="todaySessions">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Current Streak</div>
+                    <div class="stat-value" id="currentStreak">0 🔥</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card mb-6" id="marathonEventCard">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">🎪 Weekend Study Marathon Event</h3>
+            <div class="event-card">
+                <div class="event-badge">🔥 LIVE NOW</div>
+                <h4 class="text-2xl font-bold mb-2">Saturday Global Study Marathon</h4>
+                <p class="text-lg mb-3 opacity-90">Join thousands of runners worldwide!</p>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <div class="text-sm opacity-80">Time Left</div>
+                        <div class="text-2xl font-bold">2d 14h 32m</div>
+                    </div>
+                    <div>
+                        <div class="text-sm opacity-80">Your Rank</div>
+                        <div class="text-2xl font-bold">#247</div>
+                    </div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-lg p-3">
+                    <div class="text-sm mb-1">🏆 Rewards</div>
+                    <div class="font-bold">Top 100 runners get exclusive Marathon Champion badge!</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card mb-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">🗺️ Choose Your Study Trail</h3>
+            <p class="text-center text-gray-600 mb-4">Select your running environment - changes your track background!</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button class="terrain-btn active" data-terrain="city" data-bg="linear-gradient(to bottom, #e3f2fd 0%, #bbdefb 100%)" data-border="#64b5f6">
+                    <div class="terrain-icon">🌆</div>
+                    <div class="terrain-name">City Run</div>
+                </button>
+                <button class="terrain-btn" data-terrain="mountain" data-bg="linear-gradient(to bottom, #f3e5f5 0%, #e1bee7 100%)" data-border="#ba68c8">
+                    <div class="terrain-icon">🏔️</div>
+                    <div class="terrain-name">Mountain Marathon</div>
+                </button>
+                <button class="terrain-btn" data-terrain="desert" data-bg="linear-gradient(to bottom, #fff3e0 0%, #ffe0b2 100%)" data-border="#ffb74d">
+                    <div class="terrain-icon">🏜️</div>
+                    <div class="terrain-name">Desert Run</div>
+                </button>
+                <button class="terrain-btn" data-terrain="forest" data-bg="linear-gradient(to bottom, #e8f5e9 0%, #c8e6c9 100%)" data-border="#81c784">
+                    <div class="terrain-icon">🌲</div>
+                    <div class="terrain-name">Forest Trail</div>
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-card mb-6" id="avatarCustomCard">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">👟 Customize Your Runner</h3>
+            <div class="avatar-customizer">
+                <div class="avatar-preview">
+                    <div class="avatar-display" id="avatarDisplay">🏃</div>
+                    <div class="font-bold text-gray-700" id="avatarStyle">Default Runner</div>
+                </div>
+
+                <div class="customization-section">
+                    <div class="customization-title">🏃 Running Style</div>
+                    <div>
+                        <button class="option-btn active" data-type="style" data-value="🏃" data-name="Default Runner">🏃 Default</button>
+                        <button class="option-btn" data-type="style" data-value="🏃‍♂️" data-name="Male Runner">🏃‍♂️ Male</button>
+                        <button class="option-btn" data-type="style" data-value="🏃‍♀️" data-name="Female Runner">🏃‍♀️ Female</button>
+                        <button class="option-btn locked" data-type="style" data-value="🦸" data-name="Super Runner" data-unlock="50">🦸 Super (50km)</button>
+                        <button class="option-btn locked" data-type="style" data-value="🚀" data-name="Rocket Runner" data-unlock="100">🚀 Rocket (100km)</button>
+                    </div>
+                </div>
+
+                <div class="customization-section">
+                    <div class="customization-title">👟 Shoes</div>
+                    <div>
+                        <button class="option-btn active" data-type="shoes" data-value="Basic" data-name="Basic Shoes">👟 Basic</button>
+                        <button class="option-btn locked" data-type="shoes" data-value="Pro" data-name="Pro Shoes" data-unlock="25">👟 Pro (25km)</button>
+                        <button class="option-btn locked" data-type="shoes" data-value="Elite" data-name="Elite Shoes" data-unlock="100">👟 Elite (100km)</button>
+                        <button class="option-btn locked" data-type="shoes" data-value="Legendary" data-name="Legendary Shoes" data-unlock="500">👟 Legendary (500km)</button>
+                    </div>
+                </div>
+
+                <div class="customization-section">
+                    <div class="customization-title">👕 Jersey</div>
+                    <div>
+                        <button class="option-btn active" data-type="jersey" data-value="White" data-name="White Jersey">⚪ White</button>
+                        <button class="option-btn locked" data-type="jersey" data-value="Blue" data-name="Blue Jersey" data-unlock="10">🔵 Blue (10km)</button>
+                        <button class="option-btn locked" data-type="jersey" data-value="Red" data-name="Red Jersey" data-unlock="42">🔴 Red (Marathon)</button>
+                        <button class="option-btn locked" data-type="jersey" data-value="Gold" data-name="Gold Jersey" data-unlock="200">🟡 Gold (200km)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <div class="glass-card">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">📊 Statistics</h3>
+                
+                <div class="space-y-4">
+                    <div class="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                        <div class="text-sm text-gray-600 mb-1">This Week</div>
+                        <div class="text-2xl font-bold text-gray-800" id="weekDistance">0 km</div>
+                    </div>
+                    
+                    <div class="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-xl">
+                        <div class="text-sm text-gray-600 mb-1">Lifetime Distance</div>
+                        <div class="text-2xl font-bold text-gray-800" id="lifetimeDistance">0 km</div>
+                    </div>
+                    
+                    <div class="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl">
+                        <div class="text-sm text-gray-600 mb-1">Equivalent Marathons</div>
+                        <div class="text-2xl font-bold text-gray-800" id="marathonCount">0 🏅</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">🏆 Achievements</h3>
+                
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="achievement-badge locked" id="badge-first">
+                        <div class="achievement-icon">🎯</div>
+                        <div class="achievement-name">First Run</div>
+                    </div>
+                    <div class="achievement-badge locked" id="badge-10k">
+                        <div class="achievement-icon">🏃</div>
+                        <div class="achievement-name">10 km Runner</div>
+                    </div>
+                    <div class="achievement-badge locked" id="badge-half">
+                        <div class="achievement-icon">🎖️</div>
+                        <div class="achievement-name">Half Marathon</div>
+                    </div>
+                    <div class="achievement-badge locked" id="badge-full">
+                        <div class="achievement-icon">🏆</div>
+                        <div class="achievement-name">Marathon Day</div>
+                    </div>
+                    <div class="achievement-badge locked" id="badge-streak">
+                        <div class="achievement-icon">🔥</div>
+                        <div class="achievement-name">7 Day Streak</div>
+                    </div>
+                    <div class="achievement-badge locked" id="badge-1000">
+                        <div class="achievement-icon">💎</div>
+                        <div class="achievement-name">1000 km Club</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card mb-6">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">🌟 Weekly Leaderboard</h3>
+            
+            <div id="leaderboard">
+                <div class="leaderboard-item">
+                    <div class="flex items-center gap-3">
+                        <div class="rank">🥇</div>
+                        <div>
+                            <div class="font-bold">Sarah Chen</div>
+                            <div class="text-sm opacity-75">126.6 km</div>
+                        </div>
+                    </div>
+                    <div class="font-bold">3 marathons</div>
+                </div>
+                
+                <div class="leaderboard-item">
+                    <div class="flex items-center gap-3">
+                        <div class="rank">🥈</div>
+                        <div>
+                            <div class="font-bold">Alex Kumar</div>
+                            <div class="text-sm opacity-75">105.5 km</div>
+                        </div>
+                    </div>
+                    <div class="font-bold">2.5 marathons</div>
+                </div>
+                
+                <div class="leaderboard-item current-user">
+                    <div class="flex items-center gap-3">
+                        <div class="rank">🥉</div>
+                        <div>
+                            <div class="font-bold">You</div>
+                            <div class="text-sm opacity-90" id="yourWeekDistance">0 km</div>
+                        </div>
+                    </div>
+                    <div class="font-bold" id="yourMarathons">0 marathons</div>
+                </div>
+                
+                <div class="leaderboard-item">
+                    <div class="flex items-center gap-3">
+                        <div class="rank">4</div>
+                        <div>
+                            <div class="font-bold">Maria Garcia</div>
+                            <div class="text-sm opacity-75">68.3 km</div>
+                        </div>
+                    </div>
+                    <div class="font-bold">1.6 marathons</div>
+                </div>
+                
+                <div class="leaderboard-item">
+                    <div class="flex items-center gap-3">
+                        <div class="rank">5</div>
+                        <div>
+                            <div class="font-bold">James Wilson</div>
+                            <div class="text-sm opacity-75">52.8 km</div>
+                        </div>
+                    </div>
+                    <div class="font-bold">1.2 marathons</div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center mt-12 pb-8">
+            <a href="https://kuse.ai" target="_blank" class="inline-flex items-center gap-2 text-white hover:text-purple-200 transition-colors kuse-branding" style="font-size: 14px;">
+                <span>made with</span>
+                <svg viewBox="0,0,160,44" xmlns="http://www.w3.org/2000/svg" style="height: 1.2em; width: auto;"><path d="m.01,20.65C-.43,8.25,9.3-2.03,22.04.34,34.78,2.72,43.29,8.32,43.29,22.9s-8.66,19.01-22.03,20.3C7.9,44.5.46,33.05.01,20.65z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="m146.76,7.94c8.07,0,13.24,6.15,13.24,14.58v1.39h-20.75c.45,4.05,3.51,7.37,8.57,7.37,2.62,0,5.73-1.05,7.62-2.94l2.67,3.83c-2.67,2.55-6.62,3.88-10.9,3.88-8.07,0-14.08-5.6-14.08-14.08,0-7.76,5.67-14.02,13.63-14.02zm0,4.77c-5.01,0-7.29,3.83-7.57,7.1h15.13c-.11-3.16-2.28-7.1-7.57-7.1z" fill="currentColor"/><path d="m86.64,24.49c0,4.15,2.39,6.84,6.84,6.84,4.4,0,6.84-2.69,6.84-6.84V8.55h5.37v16.33c0,6.7-4.06,11.14-12.21,11.14-8.21,0-12.21-4.5-12.21-11.09V8.55h5.37v15.94zm32.99-16.55c4.49,0,8.06,1.47,10.6,3.86l-2.59,3.81c-2.05-2-5.28-3.08-8.06-3.08-2.88,0-4.84,1.37-4.84,3.32,0,1.91,2.64,2.54,5.81,3.27,4.59,1.08,10.26,2.4,10.26,8.46,0,4.94-3.76,8.41-11.14,8.41-4.98,0-8.94-1.76-11.24-4.11l2.54-4.11c1.86,1.91,5.18,3.67,8.84,3.67,3.91,0,5.57-1.66,5.57-3.62,0-2.3-2.88-2.98-6.21-3.76-4.54-1.08-9.87-2.3-9.87-8.06,0-4.5,4.2-8.06,10.31-8.06zM60.79,20.82,71.44,8.55h6.5L66.46,21.26,78.82,35.44h-6.5l-9.28-11.1-2.25,2.49v8.6h-5.33V8.55h5.33v12.27z" fill="currentColor"/></svg>
+            </a>
+        </footer>
+    </div>
+
+    <div class="premium-overlay" id="premiumOverlay">
+        <div class="premium-modal">
+            <div class="close-modal" id="closeModal">&times;</div>
+            <h2 class="text-4xl font-bold text-center mb-4">⭐ Choose Your Plan</h2>
+            <p class="text-center text-gray-600 mb-8">Unlock your full potential with Runodoro Premium</p>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3 class="text-2xl font-bold mb-2">📱 Free</h3>
+                    <div class="price">$0<span class="price-period">/month</span></div>
+                    <p class="text-sm text-gray-600 mb-4">Perfect for getting started</p>
+                    
+                    <ul class="feature-list">
+                        <li>✅ Basic Pomodoro timer</li>
+                        <li>✅ Track daily progress</li>
+                        <li>✅ Personal achievements</li>
+                        <li>✅ Weekly stats</li>
+                        <li>✅ Global leaderboard</li>
+                        <li>❌ Ads included</li>
+                    </ul>
+                    
+                    <button class="select-plan-btn free" id="selectFree">Current Plan</button>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="featured-badge">🔥 MOST POPULAR</div>
+                    <h3 class="text-2xl font-bold mb-2">⭐ Premium</h3>
+                    <div class="price">$4.99<span class="price-period">/month</span></div>
+                    <p class="text-sm opacity-90 mb-4">7-day free trial included!</p>
+                    
+                    <ul class="feature-list">
+                        <li>✅ Everything in Free</li>
+                        <li>✅ Ad-free experience</li>
+                        <li>✅ Custom avatar styles</li>
+                        <li>✅ Advanced statistics</li>
+                        <li>✅ Marathon events access</li>
+                        <li>✅ Private leaderboards</li>
+                        <li>✅ Study trail themes</li>
+                        <li>✅ Priority support</li>
+                    </ul>
+                    
+                    <button class="select-plan-btn premium" id="selectPremium">Start Free Trial</button>
+                </div>
+            </div>
+            
+            <div class="text-center mt-6 text-sm text-gray-500">
+                💳 No credit card required for trial • Cancel anytime
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MOTIVATIONAL_QUOTES = [
+            { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+            { text: "Success is the sum of small efforts repeated day in and day out.", author: "Robert Collier" },
+            { text: "Focus is a matter of deciding what things you're not going to do.", author: "John Carmack" },
+            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+            { text: "Discipline is choosing between what you want now and what you want most.", author: "Abraham Lincoln" },
+            { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" },
+            { text: "The future depends on what you do today.", author: "Mahatma Gandhi" },
+            { text: "Small daily improvements over time lead to stunning results.", author: "Robin Sharma" },
+            { text: "Your focus determines your reality.", author: "George Lucas" },
+            { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+            { text: "The harder you work for something, the greater you'll feel when you achieve it.", author: "Unknown" },
+            { text: "Success doesn't come from what you do occasionally, but what you do consistently.", author: "Marie Forleo" },
+            { text: "One day or day one. You decide.", author: "Unknown" },
+            { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" },
+            { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" }
+        ];
+
+        const MODES = {
+            sprint: { time: 15, distance: 1, name: `Sprint` },
+            standard: { time: 25, distance: 3, name: `Standard` },
+            deep: { time: 50, distance: 5, name: `Deep Focus` }
+        };
+
+        const BREAK_TIME = 5;
+        const MARATHON_DISTANCE = 42.2;
+
+        let currentMode = `standard`;
+        let timeLeft = MODES.standard.time * 60;
+        let isRunning = false;
+        let isBreak = false;
+        let timerInterval = null;
+        let dailyGoal = 21;
+
+        let stats = {
+            todayDistance: 0,
+            todayTime: 0,
+            todaySessions: 0,
+            weekDistance: 0,
+            lifetimeDistance: 0,
+            currentStreak: 0,
+            lastActiveDate: null,
+            achievements: [],
+            avatar: '🏃',
+            avatarName: 'Default Runner',
+            shoes: 'Basic',
+            jersey: 'White',
+            terrain: 'city',
+            isPremium: false,
+            trialStartDate: null,
+            trialDaysRemaining: 0
+        };
+
+        function loadStats() {
+            const saved = localStorage.getItem(`pomodoroMarathonStats`);
+            if (saved) {
+                stats = JSON.parse(saved);
+                checkDayReset();
+                checkTrialStatus();
+            }
+            updateQuote();
+            updatePremiumUI();
+        }
+
+        function checkTrialStatus() {
+            if (stats.trialStartDate && !stats.isPremium) {
+                const trialStart = new Date(stats.trialStartDate);
+                const now = new Date();
+                const daysPassed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
+                stats.trialDaysRemaining = Math.max(0, 7 - daysPassed);
+                
+                if (stats.trialDaysRemaining === 0) {
+                    stats.trialStartDate = null;
+                }
+                saveStats();
+            }
+        }
+
+        function updatePremiumUI() {
+            const isPremiumActive = stats.isPremium || (stats.trialDaysRemaining > 0 && stats.trialStartDate);
+            const badge = document.getElementById('premiumBadge');
+            const adBanner = document.getElementById('adBanner');
+            const marathonCard = document.getElementById('marathonEventCard');
+            const avatarCard = document.getElementById('avatarCustomCard');
+            
+            if (stats.isPremium) {
+                badge.className = 'premium-badge premium';
+                badge.textContent = '⭐ Premium';
+                adBanner.style.display = 'none';
+                marathonCard.classList.remove('premium-locked');
+                avatarCard.classList.remove('premium-locked');
+            } else if (stats.trialDaysRemaining > 0 && stats.trialStartDate) {
+                badge.className = 'premium-badge trial';
+                badge.textContent = `🔥 Trial: ${stats.trialDaysRemaining} days left`;
+                adBanner.style.display = 'none';
+                marathonCard.classList.remove('premium-locked');
+                avatarCard.classList.remove('premium-locked');
+            } else {
+                badge.className = 'premium-badge free';
+                badge.textContent = '📱 Free Plan';
+                adBanner.style.display = 'block';
+                marathonCard.classList.add('premium-locked');
+                avatarCard.classList.add('premium-locked');
+            }
+        }
+
+        function updateQuote() {
+            const randomQuote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
+            document.getElementById(`quoteText`).textContent = `"${randomQuote.text}"`;
+            document.getElementById(`quoteAuthor`).textContent = `— ${randomQuote.author}`;
+        }
+
+        function saveStats() {
+            localStorage.setItem(`pomodoroMarathonStats`, JSON.stringify(stats));
+        }
+
+        function checkDayReset() {
+            const today = new Date().toDateString();
+            if (stats.lastActiveDate !== today) {
+                if (stats.lastActiveDate) {
+                    const lastDate = new Date(stats.lastActiveDate);
+                    const currentDate = new Date();
+                    const diffTime = Math.abs(currentDate - lastDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays === 1) {
+                        stats.currentStreak++;
+                    } else if (diffDays > 1) {
+                        stats.currentStreak = 0;
+                    }
+                }
+                
+                stats.todayDistance = 0;
+                stats.todayTime = 0;
+                stats.todaySessions = 0;
+                stats.lastActiveDate = today;
+                saveStats();
+            }
+        }
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById(`timerDisplay`).textContent = 
+                `${minutes.toString().padStart(2, `0`)}:${seconds.toString().padStart(2, `0`)}`;
+            
+            const runner = document.getElementById(`runner`);
+            if (isRunning && !isBreak) {
+                runner.classList.add(`running`);
+            } else {
+                runner.classList.remove(`running`);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById(`todayDistance`).textContent = `${stats.todayDistance.toFixed(1)} km`;
+            document.getElementById(`todayTime`).textContent = `${stats.todayTime} min`;
+            document.getElementById(`todaySessions`).textContent = stats.todaySessions;
+            document.getElementById(`currentStreak`).textContent = `${stats.currentStreak} 🔥`;
+            
+            document.getElementById(`weekDistance`).textContent = `${stats.weekDistance.toFixed(1)} km`;
+            document.getElementById(`lifetimeDistance`).textContent = `${stats.lifetimeDistance.toFixed(1)} km`;
+            
+            const marathons = Math.floor(stats.lifetimeDistance / MARATHON_DISTANCE);
+            document.getElementById(`marathonCount`).textContent = `${marathons} 🏅`;
+            
+            const progress = Math.min((stats.todayDistance / dailyGoal) * 100, 100);
+            document.getElementById(`trackProgress`).style.width = `${progress}%`;
+            
+            const runnerPos = Math.min(progress, 100);
+            document.getElementById(`runner`).style.left = `${runnerPos}%`;
+            
+            document.getElementById(`distanceDisplay`).textContent = 
+                `${stats.todayDistance.toFixed(1)} km / ${dailyGoal} km`;
+            document.getElementById(`progressPercent`).textContent = 
+                `${progress.toFixed(1)}% Complete`;
+            
+            document.getElementById(`yourWeekDistance`).textContent = `${stats.weekDistance.toFixed(1)} km`;
+            const yourMarathons = (stats.weekDistance / MARATHON_DISTANCE).toFixed(1);
+            document.getElementById(`yourMarathons`).textContent = `${yourMarathons} marathons`;
+            
+            checkAchievements();
+        }
+
+        function checkAchievements() {
+            const achievements = [
+                { id: `first`, condition: stats.todaySessions >= 1, name: `First Run` },
+                { id: `10k`, condition: stats.lifetimeDistance >= 10, name: `10 km Runner` },
+                { id: `half`, condition: stats.todayDistance >= 21.1, name: `Half Marathon` },
+                { id: `full`, condition: stats.todayDistance >= 42.2, name: `Marathon Day` },
+                { id: `streak`, condition: stats.currentStreak >= 7, name: `7 Day Streak` },
+                { id: `1000`, condition: stats.lifetimeDistance >= 1000, name: `1000 km Club` }
+            ];
+            
+            achievements.forEach(achievement => {
+                const badge = document.getElementById(`badge-${achievement.id}`);
+                if (achievement.condition) {
+                    badge.classList.remove(`locked`);
+                    badge.classList.add(`unlocked`);
+                    
+                    if (!stats.achievements.includes(achievement.id)) {
+                        stats.achievements.push(achievement.id);
+                        showNotification(`🎉 Achievement Unlocked: ${achievement.name}!`);
+                    }
+                }
+            });
+            
+            updateCustomizationUnlocks();
+        }
+
+        function updateCustomizationUnlocks() {
+            document.querySelectorAll('.option-btn.locked').forEach(btn => {
+                const unlockDistance = parseInt(btn.dataset.unlock);
+                if (stats.lifetimeDistance >= unlockDistance) {
+                    btn.classList.remove('locked');
+                    btn.style.pointerEvents = 'auto';
+                }
+            });
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            document.getElementById(`startBtn`).classList.add(`hidden`);
+            document.getElementById(`pauseBtn`).classList.remove(`hidden`);
+            
+            if (!isBreak) {
+                document.getElementById(`sessionInfo`).textContent = `Focus Time Running...`;
+            } else {
+                document.getElementById(`sessionInfo`).textContent = `Break Time`;
+            }
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                
+                if (timeLeft <= 0) {
+                    completeSession();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById(`startBtn`).classList.remove(`hidden`);
+            document.getElementById(`pauseBtn`).classList.add(`hidden`);
+            document.getElementById(`sessionInfo`).textContent = `Paused`;
+        }
+
+        function resetTimer() {
+            isRunning = false;
+            isBreak = false;
+            clearInterval(timerInterval);
+            timeLeft = MODES[currentMode].time * 60;
+            updateDisplay();
+            document.getElementById(`startBtn`).classList.remove(`hidden`);
+            document.getElementById(`pauseBtn`).classList.add(`hidden`);
+            document.getElementById(`sessionInfo`).textContent = `Ready to Start`;
+        }
+
+        function completeSession() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            
+            if (!isBreak) {
+                const distance = MODES[currentMode].distance;
+                const time = MODES[currentMode].time;
+                
+                stats.todayDistance += distance;
+                stats.todayTime += time;
+                stats.todaySessions++;
+                stats.weekDistance += distance;
+                stats.lifetimeDistance += distance;
+                
+                saveStats();
+                updateStats();
+                
+                showCelebration(`🎉`);
+                showNotification(`✅ Session Complete! +${distance} km earned. Total today: ${stats.todayDistance.toFixed(1)} km`);
+                
+                playSound();
+                
+                isBreak = true;
+                timeLeft = BREAK_TIME * 60;
+                document.getElementById(`sessionInfo`).textContent = `Break Time - Well Done! 🎉`;
+                document.getElementById(`modeInfo`).textContent = `Take a ${BREAK_TIME} minute break`;
+                updateDisplay();
+                
+                document.getElementById(`startBtn`).classList.remove(`hidden`);
+                document.getElementById(`pauseBtn`).classList.add(`hidden`);
+            } else {
+                isBreak = false;
+                timeLeft = MODES[currentMode].time * 60;
+                document.getElementById(`sessionInfo`).textContent = `Ready for Next Session`;
+                document.getElementById(`modeInfo`).textContent = `${MODES[currentMode].name} Mode - ${MODES[currentMode].distance} km per session`;
+                updateDisplay();
+                
+                document.getElementById(`startBtn`).classList.remove(`hidden`);
+                document.getElementById(`pauseBtn`).classList.add(`hidden`);
+            }
+        }
+
+        function showCelebration(emoji) {
+            const celebration = document.createElement(`div`);
+            celebration.className = `celebration`;
+            celebration.textContent = emoji;
+            document.body.appendChild(celebration);
+            
+            setTimeout(() => {
+                celebration.remove();
+            }, 1000);
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement(`div`);
+            notification.className = `notification`;
+            notification.innerHTML = `
+                <div class="font-bold text-lg mb-1">🏃 Pomodoro Marathon</div>
+                <div class="text-gray-700">${message}</div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = `slideIn 0.3s ease-out reverse`;
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        function playSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = `sine`;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        document.querySelectorAll(`.mode-btn`).forEach(btn => {
+            btn.addEventListener(`click`, () => {
+                if (isRunning) return;
+                
+                document.querySelectorAll(`.mode-btn`).forEach(b => b.classList.remove(`active`));
+                btn.classList.add(`active`);
+                
+                currentMode = btn.dataset.mode;
+                timeLeft = MODES[currentMode].time * 60;
+                isBreak = false;
+                
+                updateDisplay();
+                document.getElementById(`sessionInfo`).textContent = `Ready to Start`;
+                document.getElementById(`modeInfo`).textContent = 
+                    `${MODES[currentMode].name} Mode - ${MODES[currentMode].distance} km per session`;
+            });
+        });
+
+        document.querySelectorAll(`.goal-btn`).forEach(btn => {
+            btn.addEventListener(`click`, () => {
+                document.querySelectorAll(`.goal-btn`).forEach(b => b.classList.remove(`active`));
+                btn.classList.add(`active`);
+                
+                dailyGoal = parseInt(btn.dataset.goal);
+                const sessions = btn.dataset.sessions;
+                const goalName = btn.textContent.trim();
+                
+                document.getElementById(`goalInfo`).innerHTML = 
+                    `📊 Goal: ${dailyGoal} km | Suggested: ${sessions} sessions | Any mode combination works!`;
+                
+                updateStats();
+                updateQuote();
+            });
+        });
+
+        document.querySelectorAll('.terrain-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.terrain-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const terrain = btn.dataset.terrain;
+                const bg = btn.dataset.bg;
+                const border = btn.dataset.border;
+                
+                stats.terrain = terrain;
+                saveStats();
+                
+                const trackContainer = document.querySelector('.track-container');
+                trackContainer.style.background = bg;
+                trackContainer.style.borderColor = border;
+            });
+        });
+
+        document.getElementById('premiumBadge').addEventListener('click', () => {
+            document.getElementById('premiumOverlay').classList.add('active');
+        });
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('premiumOverlay').classList.remove('active');
+        });
+
+        document.getElementById('premiumOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'premiumOverlay') {
+                document.getElementById('premiumOverlay').classList.remove('active');
+            }
+        });
+
+        document.getElementById('selectFree').addEventListener('click', () => {
+            stats.isPremium = false;
+            stats.trialStartDate = null;
+            stats.trialDaysRemaining = 0;
+            saveStats();
+            updatePremiumUI();
+            document.getElementById('premiumOverlay').classList.remove('active');
+            showNotification('📱 Switched to Free plan');
+        });
+
+        document.getElementById('selectPremium').addEventListener('click', () => {
+            if (!stats.trialStartDate && !stats.isPremium) {
+                stats.trialStartDate = new Date().toISOString();
+                stats.trialDaysRemaining = 7;
+                saveStats();
+                checkTrialStatus();
+                updatePremiumUI();
+                document.getElementById('premiumOverlay').classList.remove('active');
+                showNotification('🎉 7-Day Free Trial Started! Enjoy Premium features!');
+            } else {
+                stats.isPremium = true;
+                saveStats();
+                updatePremiumUI();
+                document.getElementById('premiumOverlay').classList.remove('active');
+                showNotification('⭐ Welcome to Premium!');
+            }
+        });
+
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.classList.contains('locked')) {
+                    const unlockDistance = btn.dataset.unlock;
+                    showNotification(`🔒 Unlock this at ${unlockDistance} km lifetime distance!`);
+                    return;
+                }
+                
+                const type = btn.dataset.type;
+                const value = btn.dataset.value;
+                const name = btn.dataset.name;
+                
+                document.querySelectorAll(`[data-type="${type}"]`).forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                if (type === 'style') {
+                    stats.avatar = value;
+                    stats.avatarName = name;
+                    document.getElementById('avatarDisplay').textContent = value;
+                    document.getElementById('avatarStyle').textContent = name;
+                    document.getElementById('runner').textContent = value;
+                } else if (type === 'shoes') {
+                    stats.shoes = value;
+                } else if (type === 'jersey') {
+                    stats.jersey = value;
+                }
+                
+                saveStats();
+            });
+        });
+
+        document.getElementById(`startBtn`).addEventListener(`click`, startTimer);
+        document.getElementById(`pauseBtn`).addEventListener(`click`, pauseTimer);
+        document.getElementById(`resetBtn`).addEventListener(`click`, resetTimer);
+
+        loadStats();
+        updateDisplay();
+        updateStats();
+        
+        if (stats.avatar) {
+            document.getElementById('avatarDisplay').textContent = stats.avatar;
+            document.getElementById('runner').textContent = stats.avatar;
+        }
+        if (stats.avatarName) {
+            document.getElementById('avatarStyle').textContent = stats.avatarName;
+        }
+        if (stats.terrain) {
+            const terrainBtn = document.querySelector(`[data-terrain="${stats.terrain}"]`);
+            if (terrainBtn) {
+                document.querySelectorAll('.terrain-btn').forEach(b => b.classList.remove('active'));
+                terrainBtn.classList.add('active');
+                const trackContainer = document.querySelector('.track-container');
+                trackContainer.style.background = terrainBtn.dataset.bg;
+                trackContainer.style.borderColor = terrainBtn.dataset.border;
+            }
+        }
+        updateCustomizationUnlocks();
+    </script>
+    <script src="https://cdn.kuse.ai/sdk.prd.js"></script>
+</body>
+</html>
