@@ -2088,17 +2088,11 @@ function miniToggle(){
 }
 
 // Show mini when user leaves the tab/window during a run
-// Mini timer: show when tab/window loses focus
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden && running && !onBreak) showMini();
-  else if(!document.hidden) hideMini();
 });
 window.addEventListener('blur',()=>{
   if(running && !onBreak) showMini();
-});
-window.addEventListener('focus',()=>{
-  // Small delay so mini doesn't flash on quick refocus
-  setTimeout(()=>{ if(!document.hidden) hideMini(); }, 800);
 });
 
 /* ── Drag mini timer ── */
