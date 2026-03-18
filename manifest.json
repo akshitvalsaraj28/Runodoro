@@ -1,8 +1,8 @@
 {
   "name": "Runodoro",
   "short_name": "Runodoro",
-  "description": "Focus Marathon Timer — run your mental marathon",
-  "start_url": "/",
+  "description": "Focus Marathon Timer \u2014 run your mental marathon",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d0f14",
@@ -20,5 +20,7 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "scope": "./",
+  "id": "./index.html"
 }
