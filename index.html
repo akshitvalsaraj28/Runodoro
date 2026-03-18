@@ -121,8 +121,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 
 
-.next-btn{padding:12px 40px;border-radius:60px;border:none;background:var(--accent);color:#0d0f14;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:all .2s;opacity:.3;pointer-events:none;}
-.next-btn.ready{opacity:1;pointer-events:all;}
+.next-btn{padding:12px 40px;border-radius:60px;border:none;background:var(--accent);color:#0d0f14;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:all .2s;opacity:.35;}
+.next-btn.ready{opacity:1;}
 .next-btn.ready:hover{box-shadow:0 0 22px rgba(93,252,141,.4);transform:translateY(-2px);}
 
 /* ════════════════════════════════════
@@ -1628,14 +1628,20 @@ const STUDY_DESCS={
   language:'Repetition is king — short sharp bursts, vocab builds fast.',
   other:'Whatever you are building — the road is yours to run.',
 };
-document.querySelectorAll('.choice-card').forEach(c=>{
-  c.addEventListener('click',()=>{
+document.querySelectorAll('.choice-card').forEach(card=>{
+  // Use both click and touchend for reliability on mobile
+  const handleSelect = ()=>{
     document.querySelectorAll('.choice-card').forEach(x=>x.classList.remove('selected'));
-    c.classList.add('selected');
+    card.classList.add('selected');
     document.getElementById('study-next').classList.add('ready');
     const desc=document.getElementById('study-desc');
-    if(desc){desc.textContent=STUDY_DESCS[c.dataset.val]||'';desc.style.opacity='1';}
-  });
+    if(desc){desc.textContent=STUDY_DESCS[card.dataset.val]||'';desc.style.opacity='1';}
+    // On touch devices launch directly after short delay so user sees selection
+    if('ontouchstart' in window){
+      setTimeout(()=>launchApp(), 300);
+    }
+  };
+  card.addEventListener('click', handleSelect);
 });
 
 /* ── Time selection ── */
@@ -2082,14 +2088,17 @@ function miniToggle(){
 }
 
 // Show mini when user leaves the tab/window during a run
+// Mini timer: show when tab/window loses focus
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden && running && !onBreak){
-    showMini();
-  }
+  if(document.hidden && running && !onBreak) showMini();
+  else if(!document.hidden) hideMini();
 });
-// Also show if user scrolls away from clock area
 window.addEventListener('blur',()=>{
   if(running && !onBreak) showMini();
+});
+window.addEventListener('focus',()=>{
+  // Small delay so mini doesn't flash on quick refocus
+  setTimeout(()=>{ if(!document.hidden) hideMini(); }, 800);
 });
 
 /* ── Drag mini timer ── */
