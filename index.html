@@ -1522,7 +1522,7 @@ async function sbFetch(path, opts={}) {
 }
 
 async function getSignupCount() {
-  const data = await sbFetch('/signups?select=id', {
+  const data = await sbFetch('/Sign-ups?select=id', {
     headers: {
       'apikey': SUPABASE_KEY,
       'Authorization': `Bearer ${SUPABASE_KEY}`,
@@ -1534,7 +1534,7 @@ async function getSignupCount() {
   });
   // Use Content-Range header trick via HEAD
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/signups?select=id`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups?select=id`, {
       method:'HEAD',
       headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'count=exact'},
     });
@@ -1557,7 +1557,7 @@ async function pushLeaderboardScore(){
   if(!state.userEmail) return;
   const weekKey = getWeekKey();
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/signups`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups`, {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_KEY,
@@ -1584,7 +1584,7 @@ async function fetchLeaderboard(){
   const weekKey = getWeekKey();
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/signups?select=name,weekly_km,total_sessions,email&week_key=eq.${weekKey}&order=weekly_km.desc&limit=10`,
+      `${SUPABASE_URL}/rest/v1/Sign-ups?select=name,weekly_km,total_sessions,email&week_key=eq.${weekKey}&order=weekly_km.desc&limit=10`,
       { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
     );
     if(!res.ok) return null;
@@ -2984,12 +2984,47 @@ document.getElementById('legal-popup').addEventListener('click',function(e){
 
 function closeOverlay(){document.getElementById('ov-overlay').classList.remove('open');}
 async function saveProfile(){
-  const name=(document.getElementById('ov-name').value.trim()||'Runner').slice(0,40);
-  const email=document.getElementById('ov-email').value.trim();
-  state.userName=name; save();
-  (document.getElementById('lb-name')||{}).textContent=name;
-  await insertSignup(name,email);
-  closeOverlay(); showNotif('✅ Profile Saved','Name updated to '+name);
+  const name  = (document.getElementById('ov-name').value.trim()||'Runner').slice(0,40);
+  const email = document.getElementById('ov-email').value.trim().toLowerCase();
+
+  // Validate email if provided
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showNotif('⚠️ Invalid email','Please enter a valid email address',true); return;
+  }
+
+  // Save to local state
+  state.userName  = name;
+  if(email) state.userEmail = email;
+  save();
+
+  (document.getElementById('lb-name')||{}).textContent = name;
+
+  // Save to Supabase — upsert so it works whether first time or update
+  if(email){
+    try{
+      await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups`, {
+        method: 'POST',
+        headers:{
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates,return=minimal',
+        },
+        body: JSON.stringify({
+          name, email,
+          weekly_km: parseFloat((state.weekDist||0).toFixed(2)),
+          total_sessions: state.totalSess||0,
+          streak: state.streak||0,
+          last_session_date: state.lastDate||null,
+          week_key: getWeekKey(),
+          updated_at: new Date().toISOString(),
+        }),
+      });
+    } catch(e){ console.warn('Profile save to Supabase failed',e); }
+  }
+
+  closeOverlay();
+  showNotif('✅ Profile Saved', email ? 'Name and email saved' : 'Name saved');
 }
 
 /* ── Audio ── */
