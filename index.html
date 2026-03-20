@@ -1545,7 +1545,7 @@ async function getSignupCount() {
 }
 
 async function insertSignup(name, email) {
-  return sbFetch('/signups', {
+  return sbFetch('/Sign-ups', {
     method:'POST',
     prefer:'return=minimal',
     body: JSON.stringify({name, email: email||null}),
@@ -1563,7 +1563,7 @@ async function pushLeaderboardScore(){
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
+        'Prefer': 'resolution=merge-duplicates,return=representation',
       },
       body: JSON.stringify({
         email: state.userEmail,
@@ -3008,7 +3008,7 @@ async function saveProfile(){
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${SUPABASE_KEY}`,
           'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates,return=minimal',
+          'Prefer': 'resolution=merge-duplicates,return=representation',
         },
         body: JSON.stringify({
           name, email,
