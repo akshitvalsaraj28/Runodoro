@@ -3002,7 +3002,7 @@ async function saveProfile(){
   // Save to Supabase — upsert so it works whether first time or update
   if(email){
     try{
-      await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups`, {
         method: 'POST',
         headers:{
           'apikey': SUPABASE_KEY,
@@ -3020,7 +3020,17 @@ async function saveProfile(){
           updated_at: new Date().toISOString(),
         }),
       });
-    } catch(e){ console.warn('Profile save to Supabase failed',e); }
+      const txt = await res.text();
+      if(!res.ok){
+        console.error('Supabase error:', res.status, txt);
+        showNotif('⚠️ Save failed: '+res.status, txt.slice(0,80), true);
+      } else {
+        state.emailCollected = true; save();
+      }
+    } catch(e){
+      console.error('Profile save failed:', e);
+      showNotif('⚠️ Network error', e.message||'Check console', true);
+    }
   }
 
   closeOverlay();
