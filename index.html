@@ -654,7 +654,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div class="grain"></div>
 <div id="notif-box"></div>
 <video id="pip-video" style="display:none;position:fixed;left:-9999px;" muted playsinline></video>
-<canvas id="pip-canvas" width="640" height="320" style="display:none;"></canvas>
+<canvas id="pip-canvas" width="480" height="270" style="display:none;"></canvas>
 
 <!-- ════ SCREEN 1: LANDING ════ -->
 <div class="screen active" id="screen-land">
@@ -892,7 +892,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <!-- Clock -->
     <div class="clock-card">
       <div class="mode-row">
-        <button class="mode-pill" data-mode="test">🧪 Test · 30 sec · <span style="color:var(--accent)">+1 km</span></button>
         <button class="mode-pill" data-mode="sprint">🚀 Sprint · 15 min · <span style="color:var(--accent)">+1 km</span></button>
         <button class="mode-pill active" data-mode="standard">⚡ Standard · 25 min · <span style="color:var(--accent)">+3 km</span></button>
         <button class="mode-pill" data-mode="deep">🧠 Deep · 50 min · <span style="color:var(--accent)">+5 km</span></button>
@@ -947,6 +946,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         <button class="ctrl cs" id="btn-start" onclick="startTimer()">START</button>
         <button class="ctrl cp hidden" id="btn-pause" onclick="pauseTimer()">PAUSE</button>
         <button class="ctrl cr" onclick="resetTimer()">RESET</button>
+        <button id="pip-launch-btn" onclick="startPiP()" style="display:none;padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:6px;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">⧉ Pop out timer</button>
       </div>
     </div>
 
@@ -1123,10 +1123,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div id="share-overlay" style="position:fixed;inset:0;z-index:6500;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:16px;">
   <canvas id="share-canvas" width="1200" height="680" style="border-radius:16px;max-width:100%;width:600px;height:340px;box-shadow:0 24px 80px rgba(0,0,0,0.6);"></canvas>
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-    <button onclick="downloadShareCard()" style="padding:12px 28px;border-radius:40px;border:none;background:var(--accent);color:#0d0f14;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">⬇ DOWNLOAD</button>
+    <button onclick="downloadShareCard()" style="padding:12px 28px;border-radius:40px;border:none;background:var(--accent);color:#0d0f14;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">⬇ SAVE IMAGE</button>
+    <button onclick="shareToX()" style="padding:12px 22px;border-radius:40px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">𝕏 SHARE</button>
+    <button onclick="shareNative()" id="share-native-btn" style="display:none;padding:12px 22px;border-radius:40px;border:1px solid var(--accent2);background:rgba(123,110,246,0.07);color:var(--accent2);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">⬆ SHARE</button>
     <button onclick="document.getElementById('share-overlay').style.display='none'" style="padding:12px 24px;border-radius:40px;border:1px solid var(--border);background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Close</button>
   </div>
-  <div style="font-size:11px;color:rgba(255,255,255,0.3);">Save the image and share it anywhere</div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.3);">Download and share anywhere · or post directly to 𝕏</div>
 </div>
 
 <!-- Legal Popup -->
@@ -1340,7 +1342,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">Session History</div>
     <div id="prf-sess-list" style="max-height:240px;overflow-y:auto;"></div>
 
-    <div class="ov-skip" onclick="closeOverlay()" style="margin-top:20px;">Close →</div>
+    <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;">
+      <div class="ov-skip" onclick="closeOverlay()">Close →</div>
+      <button onclick="confirmResetData()" style="background:none;border:1px solid var(--warn);border-radius:20px;color:var(--warn);font-size:10px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Reset all data</button>
+    </div>
   </div>
 </div>
 
@@ -1396,7 +1401,6 @@ const STORAGE_KEY = 'runodoro_v4';
 const MARATHON_KM = 42.195;
 const CIRC = 263.89; // 2π × 42
 const MODES = {
-  test:     {label:'Test',      time:0.5, dist:1},
   sprint:   {label:'Sprint',    time:15, dist:1},
   standard: {label:'Standard',  time:25, dist:3},
   deep:     {label:'Deep Focus',time:50, dist:5},
@@ -1717,13 +1721,8 @@ function startFromLanding(){
 
 function launchApp(){
   mode=selectedMode; focusMin=MODES[mode].time;
-  // Test mode: 30 seconds flat
-  if(mode==='test'){
-    timeLeft=30; totalTime=30;
-  } else {
-    timeLeft=focusMin*60; totalTime=focusMin*60;
-  }
-  const adjF=document.getElementById('adj-f'); if(adjF) adjF.textContent=mode==='test'?'<1':focusMin;
+  timeLeft=focusMin*60; totalTime=focusMin*60;
+  const adjF=document.getElementById('adj-f'); if(adjF) adjF.textContent=focusMin;
   document.querySelectorAll('.mode-pill').forEach(p=>{
     const a=p.dataset.mode===mode;
     p.classList.toggle('active',a); p.setAttribute('aria-pressed',a?'true':'false');
@@ -1742,6 +1741,7 @@ function launchApp(){
   running=false; onBreak=false;
   document.getElementById('btn-start').classList.remove('hidden');
   document.getElementById('btn-pause').classList.add('hidden');
+  updateMediaSession();
   const pipL = document.getElementById('pip-launch-btn');
   if(pipL) pipL.style.display='none';
   renderClock();
@@ -1808,6 +1808,7 @@ function startTimer(){
   document.getElementById('btn-start').classList.add('hidden');
   document.getElementById('btn-pause').classList.remove('hidden');
   playStartSound();
+  updateMediaSession();
   const pipLaunch = document.getElementById('pip-launch-btn');
   if(pipLaunch && document.pictureInPictureEnabled) pipLaunch.style.display='inline-block';
 
@@ -1832,6 +1833,7 @@ function pauseTimer(){
 function resetTimer(){
   pauseTimer(); onBreak=false; curRound=1;
   document.getElementById('screen-app').classList.remove('on-break');
+  (document.getElementById('btn-start')||{}).textContent='START';
   timeLeft=focusMin*60; totalTime=focusMin*60;
   (document.getElementById('rnd-cur')||{}).textContent=1;
   const lt=document.getElementById('live-time'); if(lt) lt.textContent='';
@@ -1874,6 +1876,7 @@ function finishSession(){
   } else {
     onBreak=false; curRound++;
     document.getElementById('screen-app').classList.remove('on-break');
+    (document.getElementById('btn-start')||{}).textContent='START';
     if(curRound>totalRounds){ curRound=1; showNotif('🏆 All Rounds Done!','Incredible work! Reset to go again.'); }
     (document.getElementById('rnd-cur')||{}).textContent=curRound;
     timeLeft=focusMin*60; totalTime=focusMin*60; renderClock();
@@ -2101,7 +2104,29 @@ async function startPiP(){
       cancelAnimationFrame(pipAnimHandle);
     }, {once:true});
 
-    video.onclick = ()=>{ if(running) pauseTimer(); else startTimer(); };
+    // Media Session API — this is what Chrome uses for PiP controls
+    if('mediaSession' in navigator){
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'Runodoro Focus Timer',
+        artist: running ? 'Focus Session' : 'Break',
+        album: 'RUNODORO',
+      });
+      navigator.mediaSession.setActionHandler('pause', ()=>{
+        if(running) pauseTimer();
+        updateMediaSession();
+      });
+      navigator.mediaSession.setActionHandler('play', ()=>{
+        if(!running){
+          // startTimer needs to run in app context
+          running=false; onBreak=false;
+          startTimer();
+        }
+        updateMediaSession();
+      });
+      navigator.mediaSession.setActionHandler('stop', ()=>{
+        if(document.pictureInPictureElement) document.exitPictureInPicture();
+      });
+    }
 
   } catch(e){
     pipActive = false;
@@ -2113,69 +2138,71 @@ function drawPiPFrame(){
   const canvas = document.getElementById('pip-canvas');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height; // 640x320
+  const W=480, H=270;
 
-  // ── Background ──
-  ctx.fillStyle = '#0a0c11';
-  ctx.fillRect(0,0,W,H);
+  // Background
+  ctx.fillStyle='#0a0c11'; ctx.fillRect(0,0,W,H);
 
-  // ── Radial glow ──
-  const glow = ctx.createRadialGradient(W/2, 130, 0, W/2, 130, 280);
-  glow.addColorStop(0, onBreak ? 'rgba(123,110,246,0.14)' : 'rgba(93,252,141,0.11)');
-  glow.addColorStop(1,'transparent');
-  ctx.fillStyle = glow;
-  ctx.fillRect(0,0,W,H);
+  // Glow
+  const g=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,180);
+  g.addColorStop(0, onBreak?'rgba(123,110,246,0.15)':'rgba(93,252,141,0.12)');
+  g.addColorStop(1,'transparent');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
 
-  // ── Top accent bar ──
-  ctx.fillStyle = onBreak ? '#7b6ef6' : '#5dfc8d';
-  ctx.fillRect(0,0,W,5);
+  // Top bar
+  ctx.fillStyle=onBreak?'#7b6ef6':'#5dfc8d';
+  ctx.fillRect(0,0,W,4);
 
-  // ── Row 1: Logo + Status — y=18 to 52 ──
-  ctx.fillStyle = onBreak ? '#7b6ef6' : '#5dfc8d';
-  ctx.font = 'bold 20px Arial';
-  ctx.textAlign = 'left';
-  ctx.fillText('RUNODORO', 28, 42);
+  // Logo
+  ctx.fillStyle=onBreak?'#7b6ef6':'#5dfc8d';
+  ctx.font='bold 14px Arial'; ctx.textAlign='left';
+  ctx.fillText('RUNODORO', 20, 30);
 
-  const status = onBreak ? 'BREAK' : running ? 'FOCUS' : 'PAUSED';
-  ctx.fillStyle = onBreak ? 'rgba(123,110,246,0.3)' : running ? 'rgba(93,252,141,0.2)' : 'rgba(255,255,255,0.1)';
-  ctx.beginPath(); ctx.roundRect(W-118, 18, 90, 30, 15); ctx.fill();
-  ctx.fillStyle = onBreak ? '#a78bfa' : running ? '#5dfc8d' : 'rgba(255,255,255,0.5)';
-  ctx.font = 'bold 13px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(status, W-73, 38);
+  // Status
+  const st=onBreak?'BREAK':running?'FOCUS':'PAUSED';
+  ctx.fillStyle=onBreak?'rgba(123,110,246,0.3)':running?'rgba(93,252,141,0.2)':'rgba(255,255,255,0.1)';
+  ctx.beginPath(); ctx.roundRect(W-90,12,70,24,12); ctx.fill();
+  ctx.fillStyle=onBreak?'#a78bfa':running?'#5dfc8d':'rgba(255,255,255,0.5)';
+  ctx.font='bold 11px Arial'; ctx.textAlign='center';
+  ctx.fillText(st, W-55, 28);
 
-  // ── Row 2: Big timer — y=60 to 185 ──
-  const m = Math.floor(timeLeft/60), s = timeLeft%60;
-  const timeStr = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-  ctx.font = 'bold 130px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillStyle = onBreak ? 'rgba(123,110,246,0.2)' : 'rgba(93,252,141,0.15)';
-  ctx.fillText(timeStr, W/2+3, 178+3);
-  ctx.fillStyle = onBreak ? '#7b6ef6' : '#5dfc8d';
-  ctx.fillText(timeStr, W/2, 178);
+  // Big timer
+  const m=Math.floor(timeLeft/60), s=timeLeft%60;
+  const ts=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  ctx.font='bold 96px Arial'; ctx.textAlign='center';
+  ctx.fillStyle=onBreak?'rgba(123,110,246,0.2)':'rgba(93,252,141,0.15)';
+  ctx.fillText(ts,W/2+2,152+2);
+  ctx.fillStyle=onBreak?'#7b6ef6':'#5dfc8d';
+  ctx.fillText(ts,W/2,152);
 
-  // ── Row 3: Progress bar — y=190 to 200 ──
-  const pct = totalTime > 0 ? timeLeft/totalTime : 1;
-  ctx.fillStyle = 'rgba(255,255,255,0.07)';
-  ctx.beginPath(); ctx.roundRect(28, 192, W-56, 7, 4); ctx.fill();
-  ctx.fillStyle = onBreak ? '#7b6ef6' : '#5dfc8d';
-  ctx.beginPath(); ctx.roundRect(28, 192, Math.max((W-56)*pct, 8), 7, 4); ctx.fill();
+  // Progress bar
+  const pct=totalTime>0?timeLeft/totalTime:1;
+  ctx.fillStyle='rgba(255,255,255,0.07)';
+  ctx.beginPath(); ctx.roundRect(20,162,W-40,5,3); ctx.fill();
+  ctx.fillStyle=onBreak?'#7b6ef6':'#5dfc8d';
+  ctx.beginPath(); ctx.roundRect(20,162,Math.max((W-40)*pct,6),5,3); ctx.fill();
 
-  // ── Row 4: Pause/Resume button — y=206 to 250 ──
-  // Sits well above the LIVE badge which is at very bottom
-  const btnLabel = running ? '⏸  PAUSE' : '▶  RESUME';
-  ctx.fillStyle = running ? 'rgba(93,252,141,0.13)' : 'rgba(123,110,246,0.13)';
-  ctx.beginPath(); ctx.roundRect(W/2-100, 208, 200, 48, 24); ctx.fill();
-  ctx.strokeStyle = running ? 'rgba(93,252,141,0.5)' : 'rgba(123,110,246,0.5)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.roundRect(W/2-100, 208, 200, 48, 24); ctx.stroke();
-  ctx.fillStyle = running ? '#5dfc8d' : '#a78bfa';
-  ctx.font = 'bold 19px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(btnLabel, W/2, 238);
+  // Click hint — tap to pause/resume (small, sits above LIVE badge zone)
+  ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.font='12px Arial'; ctx.textAlign='center';
+  ctx.fillText(running?'click ⏸ to pause':'click ▶ to resume', W/2, 188);
 
-  if(pipActive || running){
-    pipAnimHandle = requestAnimationFrame(drawPiPFrame);
+  if(pipActive) pipAnimHandle=requestAnimationFrame(drawPiPFrame);
+}
+
+function updateMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.playbackState = running ? 'playing' : 'paused';
+  const vid = document.getElementById('pip-video');
+  if(vid){
+    if(running && vid.paused){
+      vid.play().catch(()=>{});
+    } else if(!running && !vid.paused){
+      // Draw one frame showing paused state BEFORE freezing the video
+      drawPiPFrame();
+      // Small delay so the frame renders into the stream before pause
+      setTimeout(()=>{ vid.pause(); }, 150);
+    }
   }
 }
 
@@ -2531,11 +2558,17 @@ async function loadLeaderboard(){
   list.innerHTML='';
   if(empty) empty.style.display='none';
 
-  const data = await fetchLeaderboard();
+  let data = null;
+  try{ data = await fetchLeaderboard(); } catch(e){}
 
   if(loading) loading.style.display='none';
 
-  if(!data || data.length===0){
+  if(!data){
+    // Network failed — show offline message
+    if(list) list.innerHTML='<div style="text-align:center;padding:16px;font-size:12px;color:var(--muted);">Could not load rankings — check your connection.</div>';
+    return;
+  }
+  if(data.length===0){
     if(empty) empty.style.display='flex';
     (document.getElementById('lb-your-rank')||{}).textContent='#1';
     return;
@@ -2733,6 +2766,38 @@ function drawShareCard(canvas){
   const url='runodoro.com  ·  Focus Marathon';
   ctx.font='16px Arial'; ctx.fillStyle='rgba(255,255,255,0.4)';
   ctx.fillText(url,(W-ctx.measureText(url).width)/2,H-14);
+}
+
+function shareToX(){
+  const km = state.weekDist.toFixed(1);
+  const streak = state.streak||0;
+  const text = `I ran ${km}km of deep focus this week on Runodoro 🏃 ${streak>0?`${streak}-day streak 🔥 `:''}— run your mental marathon at runodoro.com`;
+  window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text), '_blank');
+}
+
+async function shareNative(){
+  const canvas = document.getElementById('share-canvas');
+  if(!canvas) return;
+  drawShareCard(canvas);
+  await new Promise(r=>setTimeout(r,100));
+  try{
+    canvas.toBlob(async(blob)=>{
+      const file = new File([blob], 'runodoro-stats.png', {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({
+          title:'My Runodoro Stats',
+          text:`${state.weekDist.toFixed(1)}km of focus this week 🏃`,
+          files:[file],
+        });
+      }
+    });
+  }catch(e){ downloadShareCard(); }
+}
+
+// Show native share button if supported
+if(navigator.share) {
+  const nsb = document.getElementById('share-native-btn');
+  if(nsb) nsb.style.display='inline-block';
 }
 
 function downloadShareCard(){
@@ -3215,7 +3280,7 @@ async function saveProfile(){
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${SUPABASE_KEY}`,
           'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates,return=representation',
+          'Prefer': 'resolution=merge-duplicates,return=minimal',
         },
         body: JSON.stringify({
           name, email,
@@ -3230,12 +3295,16 @@ async function saveProfile(){
       const txt = await res.text();
       if(!res.ok){
         console.error('Supabase error:', res.status, txt);
-        // Only show error if on deployed site not local
         if(location.hostname !== 'localhost' && location.protocol !== 'file:'){
-          showNotif('⚠️ Save failed: '+res.status, txt.slice(0,80), true);
+          if(res.status===401||res.status===403){
+            showNotif('⚠️ Save failed','Please try again or contact runodoro@gmail.com',true);
+          } else {
+            showNotif('⚠️ Save failed: '+res.status, txt.slice(0,80), true);
+          }
         }
       } else {
         state.emailCollected = true; save();
+        showNotif('✅ Saved!','Your profile is live.');
       }
     } catch(e){
       console.error('Profile save failed:', e);
@@ -3406,6 +3475,15 @@ function checkReviewPrompt(){
   // Show after 7 days streak OR 10 total sessions
   const shouldShow = (state.streak||0) >= 7 || (state.totalSess||0) >= 10;
   if(shouldShow) setTimeout(showReviewPrompt, 4000);
+}
+
+/* ── Reset all data ── */
+function confirmResetData(){
+  if(confirm('Reset all your data? This cannot be undone — all km, streaks, achievements and notes will be deleted.')){
+    localStorage.removeItem('runodoro_v4');
+    showNotif('🗑️ Data reset','Starting fresh. Refreshing…');
+    setTimeout(()=>location.reload(), 1500);
+  }
 }
 
 /* ── FAQ toggle ── */
