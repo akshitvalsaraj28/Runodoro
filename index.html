@@ -1603,8 +1603,22 @@ async function pushUserState(){
       },
       body: JSON.stringify(payload),
     });
-    if(!res.ok){ const t=await res.text(); console.warn('pushUserState failed:',res.status,t); }
-  } catch(e){ console.warn('pushUserState error:',e.message); }
+    if(!res.ok){
+      const t=await res.text();
+      console.warn('pushUserState failed:',res.status,t);
+      // Show error in app so we can debug
+      if(location.hostname !== 'localhost'){
+        showNotif('⚠️ Sync failed: '+res.status, t.slice(0,100), true);
+      }
+    } else {
+      console.log('pushUserState success');
+    }
+  } catch(e){
+    console.warn('pushUserState error:',e.message);
+    if(location.hostname !== 'localhost'){
+      showNotif('⚠️ Sync error', e.message, true);
+    }
+  }
 }
 
 // Alias for backwards compatibility
