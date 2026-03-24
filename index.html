@@ -1887,6 +1887,16 @@ function adj(t,d){
 /* ── Clock render ── */
 function renderClock(){
   const m=Math.floor(timeLeft/60), s=timeLeft%60;
+  // Update browser tab title
+  if(running){
+    document.title=(onBreak?'☕ ':'🏃 ')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+' — Runodoro';
+  } else if(onBreak && timeLeft<breakMin*60){
+    document.title='⏸ Break paused — Runodoro';
+  } else if(!running && timeLeft<focusMin*60){
+    document.title='⏸ Paused — Runodoro';
+  } else {
+    document.title='Runodoro — Run Your Focus Marathon';
+  }
   const d=document.getElementById('clock-disp');
   const arc=document.getElementById('ck-prog');
   const lbl=document.getElementById('clock-lbl');
@@ -1984,7 +1994,12 @@ function finishSession(){
     // Show session notes popup
     if(state.notesPromptEnabled !== false) setTimeout(()=>openNotesPopup(dist), 1000);
     onBreak=true; timeLeft=breakMin*60; totalTime=breakMin*60;
-    renderClock(); startTimer(); renderQuote();
+    document.getElementById('screen-app').classList.add('on-break');
+    renderClock(); renderQuote();
+    const bsBtn=document.getElementById('btn-start');
+    const bpBtn=document.getElementById('btn-pause');
+    if(bsBtn){ bsBtn.classList.remove('hidden'); bsBtn.textContent='START BREAK'; }
+    if(bpBtn) bpBtn.classList.add('hidden');
   } else {
     onBreak=false; curRound++;
     document.getElementById('screen-app').classList.remove('on-break');
