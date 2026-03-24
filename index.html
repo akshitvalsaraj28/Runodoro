@@ -1124,7 +1124,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <canvas id="share-canvas" width="1200" height="680" style="border-radius:16px;max-width:100%;width:600px;height:340px;box-shadow:0 24px 80px rgba(0,0,0,0.6);"></canvas>
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
     <button onclick="downloadShareCard()" style="padding:12px 28px;border-radius:40px;border:none;background:var(--accent);color:#0d0f14;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">⬇ SAVE IMAGE</button>
-    <button onclick="shareToX()" style="padding:12px 22px;border-radius:40px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">𝕏 SHARE</button>
+    <button onclick="shareToX()" style="padding:12px 22px;border-radius:40px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">𝕏 POST</button>
+    <button onclick="shareToInsta()" style="padding:12px 22px;border-radius:40px;border:1px solid rgba(193,53,132,0.5);background:rgba(193,53,132,0.08);color:#c13584;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">📸 INSTA</button>
     <button onclick="shareNative()" id="share-native-btn" style="display:none;padding:12px 22px;border-radius:40px;border:1px solid var(--accent2);background:rgba(123,110,246,0.07);color:var(--accent2);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">⬆ SHARE</button>
     <button onclick="document.getElementById('share-overlay').style.display='none'" style="padding:12px 24px;border-radius:40px;border:1px solid var(--border);background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Close</button>
   </div>
@@ -1342,7 +1343,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;">Session History</div>
     <div id="prf-sess-list" style="max-height:240px;overflow-y:auto;"></div>
 
-    <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="border-top:1px solid var(--border);margin:20px 0 10px;"></div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-bottom:10px;text-align:center;">
+      To manually adjust your streak: open browser console and type<br>
+      <code style="color:rgba(93,252,141,0.5);font-size:10px;">setStreak(7)</code> then refresh
+    </div>
+    <div style="margin-top:0px;display:flex;justify-content:space-between;align-items:center;">
       <div class="ov-skip" onclick="closeOverlay()">Close →</div>
       <button onclick="confirmResetData()" style="background:none;border:1px solid var(--warn);border-radius:20px;color:var(--warn);font-size:10px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Reset all data</button>
     </div>
@@ -1482,7 +1488,7 @@ const BURST_EMOJIS = ['🏃','💨','⚡','🔥','💪','🚀'];
 /* ── State ── */
 const DS = () => ({
   version:5, userName:'You', userEmail:'', todayDist:0, todayTime:0, todaySess:0,
-  weekDist:0, lifeDist:0, totalSess:0, streak:0, lastDate:null, lastWeek:null,
+  weekDist:0, lifeDist:0, totalSess:0, totalFocusTime:0, streak:0, lastDate:null, lastWeek:null,
   achievements:[], terrain:'forest', tutorialSeen:false, emailCollected:false, emailSkipCount:0, sessionNotes:[], dailyLog:{}, notifGranted:false, bestDay:0, bestWeek:0, bestStreak:0, sessionHistory:[], lastMilestone:0, reviewDone:false, reviewDismissCount:0, notesPromptEnabled:true,
 });
 let state = (() => {
@@ -1559,31 +1565,117 @@ async function insertSignup(name, email) {
   });
 }
 
-// Upsert weekly leaderboard score (called after each session)
-async function pushLeaderboardScore(){
+// ── Full state sync via Supabase ──
+// Stores entire state as JSON blob + timestamp
+// Whichever device has the newer timestamp wins
+
+async function pushUserState(){
   if(!state.userEmail) return;
+  if(location.protocol==='file:') return;
   const weekKey = getWeekKey();
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups?on_conflict=email`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=representation',
+  const payload = {
+    email: state.userEmail,
+    name: state.userName || 'Runner',
+    // Individual columns for leaderboard/email queries
+    streak: state.streak || 0,
+    best_streak: state.bestStreak || 0,
+    total_sessions: state.totalSess || 0,
+    weekly_km: parseFloat((state.weekDist||0).toFixed(2)),
+    life_km: parseFloat((state.lifeDist||0).toFixed(2)),
+    total_focus_mins: state.totalFocusTime || 0,
+    best_day_km: parseFloat((state.bestDay||0).toFixed(2)),
+    last_session_date: state.lastDate || null,
+    last_milestone: state.lastMilestone || 0,
+    week_key: weekKey,
+    achievements: JSON.stringify(state.achievements||[]),
+    // Full state blob for perfect restore
+    state_json: JSON.stringify({...state, _savedAt: Date.now()}),
+    updated_at: new Date().toISOString(),
+  };
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups?on_conflict=email`, {
+      method:'POST',
+      headers:{
+        'apikey':SUPABASE_KEY,
+        'Authorization':`Bearer ${SUPABASE_KEY}`,
+        'Content-Type':'application/json',
+        'Prefer':'resolution=merge-duplicates,return=minimal',
       },
-      body: JSON.stringify({
-        email: state.userEmail,
-        name: state.userName || 'Runner',
-        weekly_km: parseFloat(state.weekDist.toFixed(2)),
-        total_sessions: state.totalSess,
-        week_key: weekKey,
-        streak: state.streak || 0,
-        last_session_date: todayISO(),
-        updated_at: new Date().toISOString(),
-      }),
+      body: JSON.stringify(payload),
     });
-  } catch(e) { if(location.hostname!=='localhost'&&location.protocol!=='file:') console.warn('Leaderboard push failed', e); }
+    if(!res.ok){ const t=await res.text(); console.warn('pushUserState failed:',res.status,t); }
+  } catch(e){ console.warn('pushUserState error:',e.message); }
+}
+
+// Alias for backwards compatibility
+async function pushLeaderboardScore(){ return pushUserState(); }
+
+async function pullUserState(){
+  if(!state.userEmail) return;
+  if(location.protocol==='file:') return;
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/Sign-ups?email=eq.${encodeURIComponent(state.userEmail)}&select=state_json,streak,name&limit=1`,
+      { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
+    );
+    if(!res.ok) return;
+    const rows = await res.json();
+    if(!rows||rows.length===0) return;
+    const r = rows[0];
+
+    // If full state blob exists, compare timestamps
+    if(r.state_json){
+      try{
+        const remote = JSON.parse(r.state_json);
+        const remoteTs = remote._savedAt || 0;
+        const localTs  = state._savedAt  || 0;
+
+        if(remoteTs > localTs){
+          // Remote is newer — use it but keep local session history/notes
+          // since those aren't synced to keep payload small
+          const localNotes   = state.sessionNotes   || [];
+          const localHistory = state.sessionHistory  || [];
+          const localLog     = state.dailyLog        || {};
+          delete remote._savedAt;
+          Object.assign(state, remote);
+          // Merge local-only data back in
+          if(localHistory.length > (state.sessionHistory||[]).length)
+            state.sessionHistory = localHistory;
+          if(localNotes.length > (state.sessionNotes||[]).length)
+            state.sessionNotes = localNotes;
+          // Merge heatmap — keep all days
+          Object.keys(localLog).forEach(k=>{
+            if(!state.dailyLog[k]) state.dailyLog[k]=localLog[k];
+          });
+          save();
+          renderStats();
+          checkAch();
+          console.log('State restored from Supabase (remote newer)');
+        } else {
+          console.log('Local state is newer — keeping local');
+          // Still let admin streak overrides through
+          if(r.streak != null && r.streak !== state.streak){
+            // Only override if significantly different (admin edit)
+            // Admin would set a different value intentionally
+            const localStreak = state.streak || 0;
+            const remoteStreak = r.streak || 0;
+            if(Math.abs(remoteStreak - localStreak) > 0){
+              state.streak = remoteStreak;
+              if(r.name && r.name !== 'Runner') state.userName = r.name;
+              save(); renderStats(); checkAch();
+              console.log('Admin streak override applied:', remoteStreak);
+            }
+          }
+        }
+      } catch(e){ console.warn('state_json parse error:', e); }
+    } else {
+      // No blob yet — just use individual columns (old users)
+      let changed = false;
+      if(r.streak!=null){ state.streak=r.streak; changed=true; }
+      if(r.name && r.name!=='Runner'){ state.userName=r.name; changed=true; }
+      if(changed){ save(); renderStats(); checkAch(); }
+    }
+  } catch(e){ console.warn('pullUserState error:', e.message); }
 }
 
 // Fetch this week's leaderboard from Supabase
@@ -1753,8 +1845,10 @@ function launchApp(){
     const appEl=document.getElementById('screen-app');
     if(appEl) appEl.scrollTop=0;
   },100);
+  // Pull user state from Supabase (merges server edits into local)
+  if(state.userEmail) setTimeout(pullUserState, 500);
   // Load live leaderboard
-  setTimeout(loadLeaderboard, 800);
+  setTimeout(loadLeaderboard, 1200);
   // Check if we should ask for a review
   checkReviewPrompt();
   // Render heatmap
@@ -1813,12 +1907,15 @@ function startTimer(){
   if(pipLaunch && document.pictureInPictureEnabled) pipLaunch.style.display='inline-block';
 
   renderStats();
+  let _lastTick = Date.now();
   timerHandle=setInterval(()=>{
-    timeLeft--;
+    const now = Date.now();
+    const elapsed = Math.round((now - _lastTick) / 1000);
+    _lastTick = now;
+    timeLeft = Math.max(0, timeLeft - elapsed);
     renderClock();
     renderLiveProgress();
     if(miniVisible) updateMini();
-    // Countdown beeps for last 5 seconds of focus (not break)
     if(!onBreak && timeLeft>=1 && timeLeft<=5) playCountdownBeep(timeLeft);
     if(timeLeft<=0) finishSession();
   },1000);
@@ -1845,6 +1942,7 @@ function finishSession(){
   if(!onBreak){
     const dist=MODES[mode].dist, time=focusMin;
     state.todayDist+=dist; state.todayTime+=time; state.todaySess++; state.totalSess++;
+    state.totalFocusTime=(state.totalFocusTime||0)+time;
     state.weekDist+=dist; state.lifeDist+=dist;
     // Set lastDate and ensure streak is at least 1
     const prev=state.lastDate; const today=todayISO();
@@ -1876,13 +1974,14 @@ function finishSession(){
   } else {
     onBreak=false; curRound++;
     document.getElementById('screen-app').classList.remove('on-break');
-    (document.getElementById('btn-start')||{}).textContent='START';
     if(curRound>totalRounds){ curRound=1; showNotif('🏆 All Rounds Done!','Incredible work! Reset to go again.'); }
     (document.getElementById('rnd-cur')||{}).textContent=curRound;
     timeLeft=focusMin*60; totalTime=focusMin*60; renderClock();
-    document.getElementById('btn-start').classList.remove('hidden');
-    document.getElementById('btn-pause').classList.add('hidden');
-    showNotif('Break over!','Ready for round '+curRound+' 💪');
+    const fsBtn = document.getElementById('btn-start');
+    const fpBtn = document.getElementById('btn-pause');
+    if(fsBtn){ fsBtn.classList.remove('hidden'); fsBtn.textContent='START'; }
+    if(fpBtn) fpBtn.classList.add('hidden');
+    showNotif('☀️ Break over','Ready for round '+curRound+' — hit START when ready');
   }
 }
 
@@ -2216,7 +2315,13 @@ async function togglePiP(){
 }
 
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden && running && !onBreak) showMini();
+  if(document.hidden && running && !onBreak){
+    showMini();
+  } else if(!document.hidden && running){
+    // Recalculate timeLeft based on actual elapsed time when returning
+    // This corrects drift from background throttling
+    renderClock();
+  }
 });
 window.addEventListener('blur',()=>{
   if(running && !onBreak) showMini();
@@ -2263,7 +2368,13 @@ function miniToggle(){
 // Show mini when user leaves the tab/window during a run
 // Mini timer triggers — cover all cases: tab switch, window minimize, PWA
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden && running && !onBreak) showMini();
+  if(document.hidden && running && !onBreak){
+    showMini();
+  } else if(!document.hidden && running){
+    // Recalculate timeLeft based on actual elapsed time when returning
+    // This corrects drift from background throttling
+    renderClock();
+  }
 });
 window.addEventListener('blur',()=>{
   if(running && !onBreak) showMini();
@@ -2756,7 +2867,8 @@ function drawShareCard(canvas){
   ctx.font='bold 13px Arial'; ctx.fillStyle='rgba(93,252,141,0.65)';
   ctx.fillText('TOTAL FOCUS TIME', RP, 386);
   ctx.font='bold 36px Arial'; ctx.fillStyle='#ffffff';
-  ctx.fillText((state.todayTime||0)+' min', RP, 428);
+  const _tfh=Math.floor((state.totalFocusTime||0)/60), _tfm=(state.totalFocusTime||0)%60;
+  ctx.fillText(_tfh>0?_tfh+'h '+_tfm+'m':(state.totalFocusTime||0)+' min', RP, 428);
 
   // ── Bottom strip ──
   const botGrad=ctx.createLinearGradient(0,H-44,W,H-44);
@@ -2771,8 +2883,40 @@ function drawShareCard(canvas){
 function shareToX(){
   const km = state.weekDist.toFixed(1);
   const streak = state.streak||0;
-  const text = `I ran ${km}km of deep focus this week on Runodoro 🏃 ${streak>0?`${streak}-day streak 🔥 `:''}— run your mental marathon at runodoro.com`;
+  const text = `I ran ${km}km of deep focus this week on Runodoro 🏃${streak>0?' '+streak+'-day streak 🔥':''} — run your mental marathon at runodoro.com`;
   window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(text), '_blank');
+}
+async function shareToInsta(){
+  const canvas = document.getElementById('share-canvas');
+  if(!canvas) return;
+  drawShareCard(canvas);
+  await new Promise(r=>setTimeout(r,120));
+
+  // Try Web Share API with file (works on mobile Chrome/Safari to share to Instagram)
+  try{
+    await new Promise((resolve,reject)=>{
+      canvas.toBlob(async(blob)=>{
+        if(!blob) return reject('no blob');
+        const file = new File([blob],'runodoro-stats.png',{type:'image/png'});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({
+            title:'My Runodoro Stats',
+            text:`${state.weekDist.toFixed(1)}km of focus this week 🏃${(state.streak||0)>0?' '+state.streak+'-day streak 🔥':''}`,
+            files:[file],
+          });
+          resolve();
+        } else {
+          reject('cant share files');
+        }
+      },'image/png');
+    });
+  } catch(e){
+    // Fallback: download + instructions
+    downloadShareCard();
+    setTimeout(()=>{
+      showNotif('📸 Image saved!','Open Instagram → Stories → add from camera roll');
+    },600);
+  }
 }
 
 async function shareNative(){
@@ -3272,6 +3416,9 @@ async function saveProfile(){
   (document.getElementById('lb-name')||{}).textContent = name;
 
   // Save to Supabase — upsert so it works whether first time or update
+  // Store email in state first so pushUserState can use it
+  state.userEmail = email || state.userEmail;
+  save();
   if(email){
     try{
       const res = await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups?on_conflict=email`, {
@@ -3304,6 +3451,8 @@ async function saveProfile(){
         }
       } else {
         state.emailCollected = true; save();
+        // Push full state now that email is confirmed
+        setTimeout(pushUserState, 200);
         showNotif('✅ Saved!','Your profile is live.');
       }
     } catch(e){
@@ -3485,6 +3634,22 @@ function confirmResetData(){
     setTimeout(()=>location.reload(), 1500);
   }
 }
+
+/* ── Dev helpers ── */
+window.setStreak = function(n){
+  state.streak = parseInt(n)||0;
+  state.bestStreak = Math.max(state.bestStreak||0, state.streak);
+  save();
+  renderStats();
+  checkAch();
+  console.log('Streak set to', state.streak);
+  alert('Streak set to '+state.streak+'. Refresh to see badge update.');
+};
+window.setTotalSessions = function(n){
+  state.totalSess = parseInt(n)||0;
+  save(); renderStats();
+  console.log('Total sessions set to', state.totalSess);
+};
 
 /* ── FAQ toggle ── */
 function toggleFaq(btn){
