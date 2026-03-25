@@ -646,6 +646,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .land-section{opacity:0;transform:translateY(32px);transition:opacity .75s ease,transform .75s ease;position:relative;z-index:5;}
 .land-section.visible{opacity:1;transform:translateY(0);}
 .land-hero{opacity:1 !important;transform:none !important;}
+
+/* ── Performance optimisations ── */
+#bg-canvas{will-change:transform;}
+.clock-card,.track-card,.goal-card,.terrain-card,.lb-card,.heatmap-card,.two-col .card{contain:layout style;}
+.ck-progress{will-change:stroke-dashoffset;}
+.land-section{will-change:opacity,transform;}
+.land-section.visible{will-change:auto;}
+/* Reduce paint on hover — use opacity instead of background changes where possible */
+.feat-card,.sci-card,.pomo-step,.choice-card,.t-btn{transform:translateZ(0);}
+/* Smooth scroll for the whole page */
+#screen-land{scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
+/* GPU-accelerate the mini timer */
+#mini-timer{transform:translateZ(0);}
 </style>
 </head>
 <body>
@@ -902,6 +915,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 
   <div class="app-inner">
+    <!-- km explainer — shown to first-timers only -->
+    <div id="km-explainer" style="display:none;background:linear-gradient(135deg,rgba(93,252,141,0.07),rgba(123,110,246,0.05));border:1px solid rgba(93,252,141,0.2);border-radius:16px;padding:14px 18px;margin-bottom:16px;position:relative;">
+      <button onclick="document.getElementById('km-explainer').style.display='none';localStorage.setItem('km_explained','1')" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;">×</button>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:6px;">🏃 How the km system works</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;">Every focus session earns you <strong style="color:var(--text);">km</strong> — Sprint <span style="color:var(--accent);">+1 km</span>, Standard <span style="color:var(--accent);">+3 km</span>, Deep Focus <span style="color:var(--accent);">+5 km</span>. Hit <strong style="color:var(--text);">42 km</strong> to complete a full mental marathon. Your runner moves in real time. <span style="color:var(--accent);font-weight:700;cursor:pointer;" onclick="document.getElementById('ls-marathon').scrollIntoView&&window.goTo&&goTo('screen-land')">Learn more ↗</span></div>
+    </div>
     <div class="app-quote"><strong id="aq-text">…</strong> — <span id="aq-author"></span></div>
 
     <!-- Clock -->
@@ -1114,7 +1133,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
       <!-- Share button -->
       <div style="margin-top:14px;text-align:center;">
-        <button onclick="shareStats()" style="padding:9px 24px;border-radius:40px;border:1px solid var(--accent2);background:rgba(123,110,246,0.07);color:var(--accent2);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.background='rgba(123,110,246,0.15)'" onmouseout="this.style.background='rgba(123,110,246,0.07)'">📤 Share My Stats</button>
+        <button onclick="shareStats()" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:12px;border:1px solid rgba(93,252,141,0.22);background:rgba(93,252,141,0.06);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.background='rgba(93,252,141,0.12)';this.style.borderColor='rgba(93,252,141,0.4)';this.style.boxShadow='0 0 16px rgba(93,252,141,0.12)'" onmouseout="this.style.background='rgba(93,252,141,0.06)';this.style.borderColor='rgba(93,252,141,0.22)';this.style.boxShadow='none'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Share My Stats</button>
       </div>
     </div>
 
@@ -1135,16 +1154,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <!-- Share card overlay -->
-<div id="share-overlay" style="position:fixed;inset:0;z-index:6500;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:16px;">
-  <canvas id="share-canvas" width="1200" height="680" style="border-radius:16px;max-width:100%;width:600px;height:340px;box-shadow:0 24px 80px rgba(0,0,0,0.6);"></canvas>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-    <button onclick="downloadShareCard()" style="padding:12px 28px;border-radius:40px;border:none;background:var(--accent);color:#0d0f14;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">⬇ SAVE IMAGE</button>
-    <button onclick="shareToX()" style="padding:12px 22px;border-radius:40px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">𝕏 POST</button>
-    <button onclick="shareToInsta()" style="padding:12px 22px;border-radius:40px;border:1px solid rgba(193,53,132,0.5);background:rgba(193,53,132,0.08);color:#c13584;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">📸 INSTA</button>
-    <button onclick="shareNative()" id="share-native-btn" style="display:none;padding:12px 22px;border-radius:40px;border:1px solid var(--accent2);background:rgba(123,110,246,0.07);color:var(--accent2);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">⬆ SHARE</button>
-    <button onclick="document.getElementById('share-overlay').style.display='none'" style="padding:12px 24px;border-radius:40px;border:1px solid var(--border);background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Close</button>
+<div id="share-overlay" style="position:fixed;inset:0;z-index:6500;background:rgba(0,0,0,0.88);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:20px;">
+  <canvas id="share-canvas" width="1560" height="640" style="border-radius:16px;max-width:100%;width:min(780px,92vw);height:auto;box-shadow:0 0 0 1px rgba(0,255,127,0.1),0 32px 80px rgba(0,0,0,0.7);"></canvas>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;">
+    <button onclick="downloadShareCard()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:12px;border:none;background:var(--accent);color:#0a0f0b;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.boxShadow='0 0 22px rgba(93,252,141,0.4)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Save Image
+    </button>
+    <button onclick="shareToX()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:12px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.05);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.11)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      Post to 𝕏
+    </button>
+    <button onclick="shareToInsta()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:12px;border:1px solid rgba(193,53,132,0.3);background:rgba(193,53,132,0.07);color:#e1559a;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(193,53,132,0.15)'" onmouseout="this.style.background='rgba(193,53,132,0.07)'">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      Share to Insta
+    </button>
+    <button onclick="shareNative()" id="share-native-btn" style="display:none;align-items:center;gap:8px;padding:11px 22px;border-radius:12px;border:1px solid rgba(123,110,246,0.3);background:rgba(123,110,246,0.07);color:var(--accent2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Share
+    </button>
+    <button onclick="document.getElementById('share-overlay').style.display='none'" style="padding:11px 18px;border-radius:12px;border:1px solid rgba(255,255,255,0.09);background:none;color:rgba(255,255,255,0.38);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;" onmouseover="this.style.color='rgba(255,255,255,0.65)'" onmouseout="this.style.color='rgba(255,255,255,0.38)'">✕ Close</button>
   </div>
-  <div style="font-size:11px;color:rgba(255,255,255,0.3);">Download and share anywhere · or post directly to 𝕏</div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.18);letter-spacing:.05em;">Save and share anywhere · or post directly</div>
 </div>
 
 <!-- Legal Popup -->
@@ -1861,6 +1892,9 @@ function startFromLanding(){
 }
 
 function launchApp(){
+  if(!localStorage.getItem('km_explained')){
+    setTimeout(()=>{const b=document.getElementById('km-explainer');if(b)b.style.display='block';},400);
+  }
   mode=selectedMode; focusMin=MODES[mode].time;
   timeLeft=focusMin*60; totalTime=focusMin*60;
   const adjF=document.getElementById('adj-f'); if(adjF) adjF.textContent=focusMin;
@@ -2796,160 +2830,163 @@ function shareStats(){
 
 function drawShareCard(canvas){
   const ctx=canvas.getContext('2d');
-  const W=1200,H=680;
+  // Matches approved card: 780px wide card, ~2:1 landscape ratio
+  const W=1560,H=640;
+  canvas.width=W; canvas.height=H;
   ctx.clearRect(0,0,W,H);
 
-  // ── Base bg ──
-  ctx.fillStyle='#080a0e';
+  // BG
+  ctx.fillStyle='#0b1410';
   ctx.fillRect(0,0,W,H);
 
-  // ── Green gradient left half ──
-  const lgGrad=ctx.createLinearGradient(0,0,W/2,0);
-  lgGrad.addColorStop(0,'rgba(20,70,35,0.55)');
-  lgGrad.addColorStop(1,'rgba(8,10,14,0)');
-  ctx.fillStyle=lgGrad; ctx.fillRect(0,0,W,H);
+  // Ambient glow top-left
+  const gl=ctx.createRadialGradient(0,0,0,0,0,500);
+  gl.addColorStop(0,'rgba(0,255,127,0.11)');
+  gl.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=gl; ctx.fillRect(0,0,W,H);
 
-  // ── Radial glow behind km ──
-  const radGlow=ctx.createRadialGradient(70,H/2,0,70,H/2,400);
-  radGlow.addColorStop(0,'rgba(93,252,141,0.18)');
-  radGlow.addColorStop(0.5,'rgba(93,252,141,0.05)');
-  radGlow.addColorStop(1,'transparent');
-  ctx.fillStyle=radGlow; ctx.fillRect(0,0,W,H);
+  // Scanlines
+  for(let y=0;y<H;y+=4){ctx.fillStyle='rgba(0,255,127,0.012)';ctx.fillRect(0,y,W,1);}
 
-  // ── Diagonal beam top-right ──
-  ctx.save();
-  ctx.globalAlpha=1;
-  ctx.fillStyle='rgba(93,252,141,0.06)';
-  ctx.beginPath(); ctx.moveTo(W-500,0); ctx.lineTo(W,0); ctx.lineTo(W,400); ctx.closePath(); ctx.fill();
-  ctx.fillStyle='rgba(93,252,141,0.05)';
-  ctx.beginPath(); ctx.moveTo(W-300,0); ctx.lineTo(W,0); ctx.lineTo(W,200); ctx.closePath(); ctx.fill();
-  ctx.restore();
+  // Header bar
+  ctx.fillStyle='rgba(0,255,127,0.05)';
+  ctx.fillRect(0,0,W,72);
+  ctx.strokeStyle='rgba(0,255,127,0.12)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,72);ctx.lineTo(W,72);ctx.stroke();
 
-  // ── Scanlines ──
-  for(let y=0;y<H;y+=3){
-    ctx.fillStyle='rgba(0,0,0,0.07)';
-    ctx.fillRect(0,y,W,1);
-  }
+  // Brand dot
+  ctx.fillStyle='#00ff7f';
+  ctx.shadowColor='#00ff7f';ctx.shadowBlur=16;
+  ctx.beginPath();ctx.arc(46,36,7,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;
 
-  // ── Top green bar ──
-  ctx.fillStyle='#5dfc8d';
-  ctx.fillRect(0,0,W,6);
+  // Brand name
+  ctx.font='bold 22px Arial';
+  ctx.fillStyle='#00ff7f';
+  ctx.letterSpacing='5px';
+  ctx.fillText('RUNODORO',70,45);
 
-  // ── Right panel separator ──
-  const RX=Math.floor(W*2/3);
-  ctx.strokeStyle='rgba(255,255,255,0.08)';
-  ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(RX,80); ctx.lineTo(RX,H-60); ctx.stroke();
-
-  const PAD=64;
-
-  // ── Logo + date ──
-  ctx.font='bold 24px Arial';
-  ctx.fillStyle='#5dfc8d';
-  ctx.fillText('RUNODORO',PAD,26+20);
+  // Date
   const today=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
-  ctx.font='17px Arial';
-  ctx.fillStyle='rgba(255,255,255,0.5)';
-  ctx.fillText(today, W-PAD-ctx.measureText(today).width, 26+16);
+  ctx.font='300 18px Arial';
+  ctx.fillStyle='rgba(255,255,255,0.28)';
+  const dw=ctx.measureText(today).width;
+  ctx.fillText(today,W-46-dw,42);
 
-  // ── Name ──
-  ctx.font='bold 50px Arial';
+  // Vertical divider at 62.5% (mirrors HTML 1fr 1px 280px on 780px)
+  const DX=Math.floor(W*0.625);
+  const vg=ctx.createLinearGradient(DX,72,DX,H-52);
+  vg.addColorStop(0,'rgba(0,255,127,0)');
+  vg.addColorStop(0.18,'rgba(0,255,127,0.14)');
+  vg.addColorStop(0.82,'rgba(0,255,127,0.14)');
+  vg.addColorStop(1,'rgba(0,255,127,0)');
+  ctx.strokeStyle=vg;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(DX,72);ctx.lineTo(DX,H-52);ctx.stroke();
+
+  const LP=48;
+
+  // ── LEFT: badge above name (matches HTML order) ──
+  ctx.fillStyle='#00ff7f';
+  ctx.shadowColor='#00ff7f';ctx.shadowBlur=8;
+  ctx.beginPath();ctx.arc(LP+4,106,5,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.font='400 17px Arial';
+  ctx.fillStyle='rgba(0,204,96,0.9)';
+  ctx.fillText('WEEKLY FOCUS DISTANCE',LP+18,112);
+
+  // Name — large, 52px equivalent scaled to 2x canvas
+  ctx.font='800 104px Arial';
   ctx.fillStyle='#ffffff';
-  ctx.fillText(state.userName||'Runner', PAD, 140);
+  ctx.fillText(state.userName||'You',LP,222);
 
-  // ── Green dot + week label ──
-  ctx.fillStyle='#5dfc8d';
-  ctx.beginPath(); ctx.arc(PAD+4,158,5,0,Math.PI*2); ctx.fill();
-  ctx.font='17px Arial';
-  ctx.fillStyle='rgba(255,255,255,0.55)';
-  ctx.fillText('WEEKLY FOCUS DISTANCE', PAD+18, 163);
-
-  // ── Giant km — shadow then fill ──
+  // Big KM
   const km=state.weekDist.toFixed(1);
-  ctx.font='bold 230px Arial';
-  ctx.fillStyle='rgba(0,0,0,0.5)';
-  ctx.fillText(km, PAD+6,184+220+6);
-  ctx.fillStyle='#5dfc8d';
-  ctx.fillText(km, PAD,184+220);
+  ctx.font='800 176px Arial';
+  ctx.shadowColor='rgba(0,255,127,0.45)';ctx.shadowBlur=40;
+  ctx.fillStyle='#00ff7f';
+  ctx.fillText(km,LP,420);
+  ctx.shadowBlur=0;
   const kmW=ctx.measureText(km).width;
-  ctx.font='bold 52px Arial';
-  ctx.fillStyle='rgba(255,255,255,0.65)';
-  ctx.fillText('km', PAD+kmW+18, 184+220-30);
+  ctx.font='300 36px Arial';
+  ctx.fillStyle='rgba(255,255,255,0.32)';
+  ctx.fillText('km',LP+kmW+14,398);
 
-  // ── Rule left of separator ──
-  ctx.strokeStyle='rgba(255,255,255,0.12)';
-  ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(PAD,452); ctx.lineTo(RX-30,452); ctx.stroke();
+  // H-rule
+  ctx.strokeStyle='rgba(0,255,127,0.18)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(LP,450);ctx.lineTo(DX-40,450);ctx.stroke();
 
-  // ── 3 stats bottom left ──
-  const leftStats=[
-    {label:'TODAY', val:state.todayDist.toFixed(1)+' km'},
-    {label:'STREAK', val:(state.streak||0)+' days'},
-    {label:'SESSIONS', val:String(state.totalSess||0)},
+  // Stats row
+  const stats=[
+    {label:'TODAY',val:state.todayDist.toFixed(1)+' km'},
+    {label:'STREAK',val:(state.streak||0)+' days'},
+    {label:'SESSIONS',val:String(state.totalSess||0)},
   ];
-  const colW=(RX-PAD*2+30)/3;
-  leftStats.forEach((s,i)=>{
-    const cx=PAD+i*colW;
-    if(i>0){ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,462);ctx.lineTo(cx,630);ctx.stroke();}
-    ctx.font='bold 40px Arial'; ctx.fillStyle='#ffffff';
-    const vw=ctx.measureText(s.val).width;
-    ctx.fillText(s.val, cx+(colW-vw)/2, 510);
-    ctx.font='15px Arial'; ctx.fillStyle='rgba(93,252,141,0.8)';
-    const lw=ctx.measureText(s.label).width;
-    ctx.fillText(s.label, cx+(colW-lw)/2, 548);
+  const colW=(DX-LP*2)/3;
+  stats.forEach((s,i)=>{
+    const cx=LP+i*colW;
+    if(i>0){
+      ctx.strokeStyle='rgba(0,255,127,0.1)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(cx,462);ctx.lineTo(cx,590);ctx.stroke();
+    }
+    ctx.font='bold 44px Arial';ctx.fillStyle='#ffffff';
+    ctx.fillText(s.val,cx+(i>0?16:0),516);
+    ctx.font='400 17px Arial';ctx.fillStyle='rgba(0,204,96,0.85)';
+    ctx.fillText(s.label,cx+(i>0?16:0),550);
   });
 
-  // ── Right panel ──
-  const RP=RX+28, RPW=W-PAD-RP;
+  // ── RIGHT panel ──
+  ctx.fillStyle='rgba(0,0,0,0.18)';
+  ctx.fillRect(DX+1,72,W-DX-1,H-72-52);
+
+  const RP=DX+44,RPW=W-46-RP;
+  let ry=120;
 
   // Lifetime
-  ctx.font='bold 13px Arial'; ctx.fillStyle='rgba(93,252,141,0.65)';
-  ctx.fillText('LIFETIME KM', RP, 106);
-  ctx.font='bold 44px Arial'; ctx.fillStyle='#ffffff';
-  ctx.fillText(state.lifeDist.toFixed(0)+' km', RP, 152);
+  ctx.font='400 17px Arial';ctx.fillStyle='rgba(255,255,255,0.28)';
+  ctx.fillText('LIFETIME DISTANCE',RP,ry);
+  ctx.font='bold 40px Arial';ctx.fillStyle='#ffffff';
+  ctx.fillText(state.lifeDist.toFixed(1)+' km',RP,ry+46); ry+=100;
 
-  ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(RP,170); ctx.lineTo(RP+RPW,170); ctx.stroke();
+  // Marathon progress
+  ctx.font='400 17px Arial';ctx.fillStyle='rgba(255,255,255,0.28)';
+  ctx.fillText('MARATHON PROGRESS',RP,ry);
+  const pct=Math.min((state.lifeDist%42.195)/42.195,1);
+  ctx.fillStyle='rgba(255,255,255,0.07)';
+  ctx.beginPath();ctx.roundRect(RP,ry+10,RPW,8,4);ctx.fill();
+  const fw2=Math.max(RPW*pct,10);
+  ctx.fillStyle='#00ff7f';ctx.shadowColor='#00ff7f';ctx.shadowBlur=10;
+  ctx.beginPath();ctx.roundRect(RP,ry+10,fw2,8,4);ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#00ff7f';ctx.shadowColor='#00ff7f';ctx.shadowBlur=14;
+  ctx.beginPath();ctx.arc(RP+fw2,ry+14,7,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.font='400 15px Arial';ctx.fillStyle='rgba(255,255,255,0.28)';
+  ctx.fillText(Math.floor(state.lifeDist/42.195)+' full  ·  '+state.lifeDist.toFixed(1)+' total',RP,ry+36);
+  ry+=100;
 
-  // Marathon progress bar
-  ctx.font='bold 13px Arial'; ctx.fillStyle='rgba(93,252,141,0.65)';
-  ctx.fillText('MARATHON PROGRESS', RP, 198);
-  const marathonPct=Math.min((state.lifeDist%42)/42,1);
-  const barW=RPW, barH=12;
-  ctx.fillStyle='rgba(255,255,255,0.1)';
-  ctx.beginPath(); ctx.roundRect(RP,212,barW,barH,6); ctx.fill();
-  ctx.fillStyle='#5dfc8d';
-  ctx.beginPath(); ctx.roundRect(RP,212,Math.max(barW*marathonPct,8),barH,6); ctx.fill();
-  ctx.font='13px Arial'; ctx.fillStyle='rgba(255,255,255,0.45)';
-  ctx.fillText(Math.floor(state.lifeDist/42)+' full · '+state.lifeDist.toFixed(1)+' total', RP, 244);
-
-  ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(RP,262); ctx.lineTo(RP+RPW,262); ctx.stroke();
-
-  // Best streak
-  ctx.font='bold 13px Arial'; ctx.fillStyle='rgba(93,252,141,0.65)';
-  ctx.fillText('CURRENT STREAK', RP, 292);
-  ctx.font='bold 36px Arial'; ctx.fillStyle='#ffffff';
-  ctx.fillText((state.streak||0)+' days 🔥', RP, 334);
-
-  ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(RP,356); ctx.lineTo(RP+RPW,356); ctx.stroke();
+  // Streak pill
+  ctx.font='400 17px Arial';ctx.fillStyle='rgba(255,255,255,0.28)';
+  ctx.fillText('CURRENT STREAK',RP,ry);
+  ctx.fillStyle='rgba(0,255,127,0.07)';
+  ctx.strokeStyle='rgba(0,255,127,0.2)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(RP,ry+8,190,50,25);ctx.fill();ctx.stroke();
+  ctx.font='bold 28px Arial';ctx.fillStyle='#ffffff';
+  ctx.fillText('🔥 '+(state.streak||0)+' days',RP+14,ry+40); ry+=100;
 
   // Focus time
-  ctx.font='bold 13px Arial'; ctx.fillStyle='rgba(93,252,141,0.65)';
-  ctx.fillText('TOTAL FOCUS TIME', RP, 386);
-  ctx.font='bold 36px Arial'; ctx.fillStyle='#ffffff';
-  const _tfh=Math.floor((state.totalFocusTime||0)/60), _tfm=(state.totalFocusTime||0)%60;
-  ctx.fillText(_tfh>0?_tfh+'h '+_tfm+'m':(state.totalFocusTime||0)+' min', RP, 428);
+  ctx.font='400 17px Arial';ctx.fillStyle='rgba(255,255,255,0.28)';
+  ctx.fillText('TOTAL FOCUS TIME',RP,ry);
+  const _tfh=Math.floor((state.totalFocusTime||0)/60),_tfm=(state.totalFocusTime||0)%60;
+  ctx.font='bold 38px Arial';ctx.fillStyle='#ffffff';
+  ctx.fillText(_tfh>0?_tfh+'h '+_tfm+'m':(state.totalFocusTime||0)+' min',RP,ry+46);
 
-  // ── Bottom strip ──
-  const botGrad=ctx.createLinearGradient(0,H-44,W,H-44);
-  botGrad.addColorStop(0,'rgba(93,252,141,0.07)');
-  botGrad.addColorStop(1,'rgba(8,10,14,0)');
-  ctx.fillStyle=botGrad; ctx.fillRect(0,H-44,W,44);
-  const url='runodoro.com  ·  Focus Marathon';
-  ctx.font='16px Arial'; ctx.fillStyle='rgba(255,255,255,0.4)';
-  ctx.fillText(url,(W-ctx.measureText(url).width)/2,H-14);
+  // Footer
+  ctx.strokeStyle='rgba(0,255,127,0.09)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,H-52);ctx.lineTo(W,H-52);ctx.stroke();
+  const furl='runodoro.com  ·  Focus Marathon';
+  ctx.font='300 18px Arial';ctx.fillStyle='rgba(255,255,255,0.2)';
+  const fw=ctx.measureText(furl).width;
+  ctx.fillText(furl,(W-fw)/2,H-16);
 }
 
 function shareToX(){
