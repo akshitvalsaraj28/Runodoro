@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- © 2026 Runodoro. All rights reserved. Unauthorized copying or reproduction is prohibited. -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -10,7 +11,43 @@
   <meta name="theme-color" content="#5dfc8d">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Runodoro — Run Your Focus Marathon</title>
+<title>Runodoro — Turn Your Focus Into A Marathon</title>
+<meta name="description" content="Runodoro is a free focus timer that turns your study sessions into a marathon. Every 25 minutes = 3 km. Build streaks, track progress, compete on the leaderboard.">
+<meta name="keywords" content="pomodoro timer, focus timer, study timer, productivity app, pomodoro technique, focus app, study app">
+<meta name="author" content="Runodoro">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://runodoro.com/">
+
+<!-- Structured data for Google -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Runodoro",
+  "url": "https://runodoro.com",
+  "description": "A free focus timer that turns your study sessions into a marathon. Every 25 minutes of focus = 3 km. Build streaks and track progress.",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "Web, iOS, Android",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+
+<!-- Open Graph (for sharing on social media) -->
+<meta property="og:title" content="Runodoro — Turn Your Focus Into A Marathon">
+<meta property="og:description" content="Every 25 minutes of focus = 3 km. Run your mental marathon. Free focus timer with streaks, leaderboard and achievements.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://runodoro.com/">
+<meta property="og:image" content="https://runodoro.com/icon-512.png">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Runodoro — Turn Your Focus Into A Marathon">
+<meta name="twitter:description" content="Every 25 minutes of focus = 3 km. Free focus timer with streaks, leaderboard and achievements.">
+<meta name="twitter:image" content="https://runodoro.com/icon-512.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -141,7 +178,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .snd-btn.on{border-color:var(--accent);background:rgba(93,252,141,0.12);box-shadow:0 0 10px rgba(93,252,141,0.2);}
 
 /* Quote */
-.app-quote{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:10px 15px;margin-bottom:16px;font-size:13px;color:var(--muted);font-style:italic;}
+.app-quote{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:10px 15px;margin-bottom:16px;font-size:13px;color:var(--muted);font-style:italic;max-height:60px;overflow:hidden;}
 .app-quote strong{color:var(--text);font-style:normal;}
 
 /* Clock */
@@ -543,7 +580,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 /* ── Terrain Card v2 ── */
 .terrain-desc{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:14px;padding:9px 13px;background:var(--surface2);border-radius:10px;border-left:3px solid var(--accent);line-height:1.5;}
-.terrain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.terrain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;overflow:hidden;}
 .t-btn{position:relative;background:var(--surface2);border:1px solid var(--border);border-radius:16px;cursor:pointer;transition:all .25s;text-align:left;padding:0;overflow:hidden;font-family:'DM Sans',sans-serif;}
 .t-btn:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4);}
 .t-btn.active{border-color:var(--accent);box-shadow:0 0 20px rgba(93,252,141,.2);}
@@ -697,11 +734,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div id="hero-stats" style="display:flex;align-items:center;gap:6px;margin:22px 0 26px;opacity:0;animation:fu .7s 1s ease forwards;background:rgba(93,252,141,0.06);border:1px solid rgba(93,252,141,0.15);border-radius:40px;padding:10px 22px;font-size:12px;font-weight:700;color:var(--muted);">
       <span style="color:var(--accent);font-size:16px;">🏃</span>
       <span id="hero-km-count" style="color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:18px;">—</span>
-      <span>km run by the community today</span>
+      <span>km run by the community this week</span>
     </div>
 
     <div class="cta-wrap" style="pointer-events:all;">
-      <button class="cta-main" id="cta-start" onclick="startFromLanding()">START RUNNING</button>
+      <button class="cta-main" id="cta-start" onclick="this.textContent='LOADING...';startFromLanding()">START RUNNING</button>
       <div class="cta-hint" style="margin-top:8px;font-size:11px;color:var(--muted);">No account needed · Works on any device</div>
     </div>
 
@@ -806,7 +843,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         </div>
         <div class="faq-item">
           <button class="faq-q" onclick="toggleFaq(this)">What is the km system? <span class="faq-arrow">↓</span></button>
-          <div class="faq-a">Every focus session earns you km — Sprint gives +1 km, Standard +3 km, Deep Focus +5 km. You're running a mental marathon. Hit daily goals of 5, 10, 21, or 42 km.</div>
+          <div class="faq-a">Every focus session earns you kilometers — Sprint gives +1 kilometer, Standard +3 kilometers, Deep Focus +5 kilometers. You're running a mental marathon. Hit daily goals of 5, 10, 21, or 42 kilometers per day.</div>
         </div>
         <div class="faq-item">
           <button class="faq-q" onclick="toggleFaq(this)">Does my data save between sessions? <span class="faq-arrow">↓</span></button>
@@ -870,12 +907,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
     <button class="su-submit" id="su-btn" onclick="submitSignup()">LET'S GO →</button>
     <div class="su-status" id="su-status"></div>
-    <div class="su-skip" onclick="skipSignup()">Skip for now — just let me explore →</div>
-    <div style="margin-top:16px;text-align:center;">
-      <button onclick="skipSignup()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:3px;opacity:0.6;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">
-        Skip for now — I'll add my email later
-      </button>
-    </div>
+    <div class="su-skip" onclick="skipSignup()">Skip for now — I'll add my email later →</div>
 
   </div>
 </div>
@@ -883,7 +915,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <!-- ════ SCREEN 3: STUDY TYPE ════ -->
 <div class="screen" id="screen-study">
   <div class="ob-wrap">
-    <button class="ob-back" onclick="goTo('screen-signup')">← Back</button>
+    <button class="ob-back" onclick="goTo('screen-land')">← Back</button>
     <div class="ob-step">Choose your focus</div>
     <div class="ob-title">WHAT'S YOUR<br>FOCUS TODAY?</div>
     <div class="ob-sub">Pick your focus type — we'll set the vibe. You can adjust session length inside.</div>
@@ -1155,7 +1187,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 <!-- Share card overlay -->
 <div id="share-overlay" style="position:fixed;inset:0;z-index:6500;background:rgba(0,0,0,0.88);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:20px;">
-  <canvas id="share-canvas" width="1560" height="640" style="border-radius:16px;max-width:100%;width:min(780px,92vw);height:auto;box-shadow:0 0 0 1px rgba(0,255,127,0.1),0 32px 80px rgba(0,0,0,0.7);"></canvas>
+  <canvas id="share-canvas" width="1640" height="680" style="border-radius:16px;max-width:100%;width:min(780px,92vw);height:auto;box-shadow:0 0 0 1px rgba(0,255,127,0.1),0 32px 80px rgba(0,0,0,0.7);"></canvas>
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;">
     <button onclick="downloadShareCard()" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:12px;border:none;background:var(--accent);color:#0a0f0b;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.boxShadow='0 0 22px rgba(93,252,141,0.4)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1286,16 +1318,60 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
     <!-- Header row -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text);">YOUR PROFILE</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text);" id="ov-title">YOUR PROFILE</div>
       <button class="ov-close" onclick="closeOverlay()" style="margin:0;padding:6px 14px;border:1px solid var(--border);border-radius:20px;font-size:11px;">✕ Close</button>
     </div>
 
-    <!-- Identity -->
-    <div style="display:flex;gap:10px;margin-bottom:20px;">
-      <div class="field" style="flex:1;margin:0;"><label>Runner Name</label><input type="text" id="ov-name" placeholder="Your name…" maxlength="40" autocomplete="name"></div>
-      <div class="field" style="flex:1;margin:0;"><label>Email</label><input type="email" id="ov-email" placeholder="you@example.com" autocomplete="email" style="background:var(--surface2);color:var(--text);"></div>
+    <!-- Auth tabs — shown when not logged in -->
+    <div id="ov-auth-section">
+      <div style="display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+        <button id="auth-tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:10px;border:none;background:var(--accent);color:#0d0f14;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;cursor:pointer;">LOG IN</button>
+        <button id="auth-tab-signup" onclick="switchAuthTab('signup')" style="flex:1;padding:10px;border:none;background:none;color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;cursor:pointer;">SIGN UP</button>
+      </div>
+
+      <!-- Login panel -->
+      <div id="auth-login-panel">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">Enter your email to restore your progress on this device.</div>
+        <div class="field" style="margin-bottom:12px;"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" style="background:var(--surface2);color:var(--text);"></div>
+        <button onclick="doLogin()" style="width:100%;padding:12px;border-radius:var(--radius);border:none;background:var(--accent);color:#0d0f14;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;" id="login-btn">LOG IN</button>
+        <div id="login-status" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
+      </div>
+
+      <!-- Signup panel -->
+      <div id="auth-signup-panel" style="display:none;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">Join the leaderboard and get streak reminders.</div>
+        <div class="field" style="margin-bottom:10px;"><label>Runner Name</label><input type="text" id="signup-name" placeholder="Your name…" maxlength="40" autocomplete="name"></div>
+        <div class="field" style="margin-bottom:12px;"><label>Email</label><input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email" style="background:var(--surface2);color:var(--text);"></div>
+        <button onclick="doSignup()" style="width:100%;padding:12px;border-radius:var(--radius);border:none;background:var(--accent);color:#0d0f14;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;" id="signup-btn">CREATE ACCOUNT</button>
+        <div id="signup-status" style="font-size:12px;margin-top:10px;min-height:16px;"></div>
+      </div>
     </div>
-    <button class="ov-submit" onclick="saveProfile()" style="margin-bottom:0;">SAVE PROFILE</button>
+
+    <!-- Logged-in identity — shown when user has email -->
+    <div id="ov-identity-section" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;background:var(--surface2);border-radius:12px;padding:12px 16px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);" id="ov-display-name">Runner</div>
+          <div style="font-size:11px;color:var(--muted);" id="ov-display-email">—</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="showEditProfile()" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✏️ Edit</button>
+          <button onclick="doLogout()" style="padding:6px 14px;border-radius:20px;border:1px solid rgba(245,87,124,0.3);background:none;color:var(--warn);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.background='rgba(245,87,124,0.1)'" onmouseout="this.style.background='none'">Log out</button>
+        </div>
+      </div>
+
+      <!-- Edit profile inline -->
+      <div id="ov-edit-section" style="display:none;margin-bottom:16px;">
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+          <div class="field" style="flex:1;margin:0;"><label>Runner Name</label><input type="text" id="ov-name" placeholder="Your name…" maxlength="40" autocomplete="name"></div>
+          <div class="field" style="flex:1;margin:0;"><label>Email</label><input type="email" id="ov-email" placeholder="you@example.com" autocomplete="email" style="background:var(--surface2);color:var(--text);"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="ov-submit" onclick="saveProfile()" style="flex:1;margin-bottom:0;">SAVE CHANGES</button>
+          <button onclick="hideEditProfile()" style="padding:12px 16px;border-radius:var(--radius);border:1px solid var(--border);background:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ── STATS SECTION ── -->
     <div style="border-top:1px solid var(--border);margin:24px 0 16px;"></div>
@@ -1390,10 +1466,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div id="prf-sess-list" style="max-height:240px;overflow-y:auto;"></div>
 
     <div style="border-top:1px solid var(--border);margin:20px 0 10px;"></div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-bottom:10px;text-align:center;">
-      To manually adjust your streak: open browser console and type<br>
-      <code style="color:rgba(93,252,141,0.5);font-size:10px;">setStreak(7)</code> then refresh
-    </div>
+
     <div style="margin-top:0px;display:flex;justify-content:space-between;align-items:center;">
       <div class="ov-skip" onclick="closeOverlay()">Close →</div>
       <button onclick="confirmResetData()" style="background:none;border:1px solid var(--warn);border-radius:20px;color:var(--warn);font-size:10px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Reset all data</button>
@@ -1535,7 +1608,7 @@ const BURST_EMOJIS = ['🏃','💨','⚡','🔥','💪','🚀'];
 const DS = () => ({
   version:5, userName:'You', userEmail:'', todayDist:0, todayTime:0, todaySess:0,
   weekDist:0, lifeDist:0, totalSess:0, totalFocusTime:0, streak:0, lastDate:null, lastWeek:null,
-  achievements:[], terrain:'forest', tutorialSeen:false, emailCollected:false, emailSkipCount:0, sessionNotes:[], dailyLog:{}, notifGranted:false, bestDay:0, bestWeek:0, bestStreak:0, sessionHistory:[], lastMilestone:0, reviewDone:false, reviewDismissCount:0, notesPromptEnabled:true,
+  achievements:[], terrain:'forest', savedGoal:21, tutorialSeen:false, emailCollected:false, emailSkipCount:0, sessionNotes:[], dailyLog:{}, notifGranted:false, bestDay:0, bestWeek:0, bestStreak:0, sessionHistory:[], lastMilestone:0, reviewDone:false, reviewDismissCount:0, notesPromptEnabled:true,
 });
 let state = (() => {
   try { const r=localStorage.getItem(STORAGE_KEY); if(r) return Object.assign(DS(),JSON.parse(r)); } catch{}
@@ -1798,8 +1871,11 @@ async function fetchLeaderboard(){
 function goTo(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const n=document.getElementById(id);
-  if(n){
-    n.classList.add('active');
+  if(n) n.classList.add('active');
+  // Reset CTA button text when going back to landing
+  if(id==='screen-land'){
+    const cta=document.getElementById('cta-start');
+    if(cta) cta.textContent='START RUNNING';
   }
 }
 
@@ -1892,8 +1968,12 @@ function startFromLanding(){
 }
 
 function launchApp(){
-  if(!localStorage.getItem('km_explained')){
-    setTimeout(()=>{const b=document.getElementById('km-explainer');if(b)b.style.display='block';},400);
+  // Restore saved daily goal
+  if(state.savedGoal) {
+    dailyGoal = state.savedGoal;
+    document.querySelectorAll('.goal-pill').forEach(b=>{
+      b.classList.toggle('active', parseInt(b.dataset.goal)===dailyGoal);
+    });
   }
   mode=selectedMode; focusMin=MODES[mode].time;
   timeLeft=focusMin*60; totalTime=focusMin*60;
@@ -2212,7 +2292,8 @@ function launchConfetti(){
 function renderQuote(){
   const q=QUOTES[Math.floor(Math.random()*QUOTES.length)];
   const aqt=document.getElementById('aq-text'); if(!aqt) return;
-  aqt.textContent=`"${q.text}"`;
+  const text = q.text.length > 90 ? q.text.slice(0,87)+'...' : q.text;
+  aqt.textContent=`"${text}"`;
   const aqa=document.getElementById('aq-author'); if(aqa) aqa.textContent=q.author;
 }
 
@@ -2234,6 +2315,8 @@ document.querySelectorAll('.goal-pill').forEach(btn=>{
     document.querySelectorAll('.goal-pill').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     dailyGoal=parseInt(btn.dataset.goal,10);
+    state.savedGoal = dailyGoal;
+    save();
     updateGoalInfo();
     renderStats();
   });
@@ -2521,11 +2604,13 @@ window.addEventListener('pagehide',()=>{
 
 function openOverlay(){
   document.getElementById('ov-overlay').classList.add('open');
-  document.getElementById('ov-name').value=state.userName||'';
-  document.getElementById('ov-email').value=state.userEmail||'';
-  // Show EDIT PROFILE if already saved, SAVE PROFILE if new
-  const profBtn = document.querySelector('.ov-submit');
-  if(profBtn) profBtn.textContent = state.userEmail ? 'EDIT PROFILE' : 'SAVE PROFILE';
+  // Show correct panel based on whether user is logged in
+  if(state.userEmail){
+    showLoggedInProfile();
+  } else {
+    showAuthPanel();
+    switchAuthTab('login');
+  }
 
   // Default to weekly tab
   switchPeriod('week', document.querySelector('.period-tab[data-period="week"]'));
@@ -2831,17 +2916,17 @@ function shareStats(){
 function drawShareCard(canvas){
   const ctx=canvas.getContext('2d');
   // Matches approved card: 780px wide card, ~2:1 landscape ratio
-  const W=1560,H=640;
+  const W=1640,H=680;
   canvas.width=W; canvas.height=H;
   ctx.clearRect(0,0,W,H);
 
   // BG
-  ctx.fillStyle='#0b1410';
+  ctx.fillStyle='#0f1612';
   ctx.fillRect(0,0,W,H);
 
   // Ambient glow top-left
-  const gl=ctx.createRadialGradient(0,0,0,0,0,500);
-  gl.addColorStop(0,'rgba(0,255,127,0.11)');
+  const gl=ctx.createRadialGradient(0,0,0,0,0,400);
+  gl.addColorStop(0,'rgba(0,255,127,0.07)');
   gl.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=gl; ctx.fillRect(0,0,W,H);
 
@@ -2874,7 +2959,7 @@ function drawShareCard(canvas){
   ctx.fillText(today,W-46-dw,42);
 
   // Vertical divider at 62.5% (mirrors HTML 1fr 1px 280px on 780px)
-  const DX=Math.floor(W*0.625);
+  const DX=Math.floor(W*0.62);
   const vg=ctx.createLinearGradient(DX,72,DX,H-52);
   vg.addColorStop(0,'rgba(0,255,127,0)');
   vg.addColorStop(0.18,'rgba(0,255,127,0.14)');
@@ -3519,15 +3604,15 @@ async function saveProfile(){
 
   // Save to local state
   state.userName  = name;
-  if(email) state.userEmail = email;
+  if(email) state.userEmail = email || state.userEmail;
   save();
-
   (document.getElementById('lb-name')||{}).textContent = name;
-
-  // Save to Supabase — upsert so it works whether first time or update
-  // Store email in state first so pushUserState can use it
-  state.userEmail = email || state.userEmail;
-  save();
+  // Update display in overlay
+  const dn = document.getElementById('ov-display-name');
+  const de = document.getElementById('ov-display-email');
+  if(dn) dn.textContent = name;
+  if(de) de.textContent = state.userEmail||'';
+  hideEditProfile();
   if(email){
     try{
       const res = await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups?on_conflict=email`, {
@@ -3560,9 +3645,11 @@ async function saveProfile(){
         }
       } else {
         state.emailCollected = true; save();
-        // Push full state now that email is confirmed
         setTimeout(pushUserState, 200);
-        showNotif('✅ Saved!','Your profile is live.');
+        const pb2 = document.querySelector('.ov-submit');
+        if(pb2) pb2.textContent = 'EDIT PROFILE';
+        closeOverlay();
+        showNotif('✅ Profile saved!','Name and email live on the leaderboard.');
       }
     } catch(e){
       console.error('Profile save failed:', e);
@@ -3574,8 +3661,180 @@ async function saveProfile(){
 
   const pb = document.querySelector('.ov-submit');
   if(pb) pb.textContent = 'EDIT PROFILE';
-  closeOverlay();
-  showNotif('✅ Profile Saved', email ? 'Name and email saved' : 'Name saved');
+  // Only close and notify if no email (email flow closes in try/catch above)
+  if(!email){
+    closeOverlay();
+    showNotif('✅ Name Saved', 'Add your email to unlock leaderboard and reminders');
+  }
+}
+
+/* ── Auth: Login / Signup / Logout ── */
+function switchAuthTab(tab){
+  const loginBtn  = document.getElementById('auth-tab-login');
+  const signupBtn = document.getElementById('auth-tab-signup');
+  const loginP    = document.getElementById('auth-login-panel');
+  const signupP   = document.getElementById('auth-signup-panel');
+  if(!loginBtn) return;
+  if(tab==='login'){
+    loginBtn.style.background='var(--accent)'; loginBtn.style.color='#0d0f14';
+    signupBtn.style.background='none'; signupBtn.style.color='var(--muted)';
+    loginP.style.display='block'; signupP.style.display='none';
+  } else {
+    signupBtn.style.background='var(--accent)'; signupBtn.style.color='#0d0f14';
+    loginBtn.style.background='none'; loginBtn.style.color='var(--muted)';
+    signupP.style.display='block'; loginP.style.display='none';
+  }
+}
+
+function showAuthPanel(){
+  const auth = document.getElementById('ov-auth-section');
+  const ident = document.getElementById('ov-identity-section');
+  if(auth) auth.style.display='block';
+  if(ident) ident.style.display='none';
+  // Clear fields
+  const le = document.getElementById('login-email');
+  const sn = document.getElementById('signup-name');
+  const se = document.getElementById('signup-email');
+  if(le) le.value='';
+  if(sn) sn.value='';
+  if(se) se.value='';
+  const ls = document.getElementById('login-status');
+  const ss = document.getElementById('signup-status');
+  if(ls) ls.textContent='';
+  if(ss) ss.textContent='';
+}
+
+function showLoggedInProfile(){
+  const auth = document.getElementById('ov-auth-section');
+  const ident = document.getElementById('ov-identity-section');
+  if(auth) auth.style.display='none';
+  if(ident) ident.style.display='block';
+  const dn = document.getElementById('ov-display-name');
+  const de = document.getElementById('ov-display-email');
+  if(dn) dn.textContent = state.userName||'Runner';
+  if(de) de.textContent = state.userEmail||'';
+  hideEditProfile();
+}
+
+function showEditProfile(){
+  const ed = document.getElementById('ov-edit-section');
+  if(ed) ed.style.display='block';
+  const n = document.getElementById('ov-name');
+  const e = document.getElementById('ov-email');
+  if(n) n.value = state.userName||'';
+  if(e) e.value = state.userEmail||'';
+}
+
+function hideEditProfile(){
+  const ed = document.getElementById('ov-edit-section');
+  if(ed) ed.style.display='none';
+}
+
+async function doLogin(){
+  const emailEl = document.getElementById('login-email');
+  const status  = document.getElementById('login-status');
+  const btn     = document.getElementById('login-btn');
+  if(!emailEl||!status) return;
+  const email = emailEl.value.trim().toLowerCase();
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    status.style.color='var(--warn)';
+    status.textContent='⚠️ Enter a valid email address.'; return;
+  }
+  btn.textContent='Checking…'; btn.disabled=true;
+  status.textContent='';
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/Sign-ups?email=eq.${encodeURIComponent(email)}&select=*&limit=1`,
+      { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
+    );
+    const rows = await res.json();
+    if(!rows||rows.length===0){
+      status.style.color='var(--warn)';
+      status.textContent='No account found with that email. Sign up instead!';
+      btn.textContent='LOG IN'; btn.disabled=false; return;
+    }
+    const r = rows[0];
+    // Restore state from Supabase
+    state.userEmail = email;
+    if(r.name && r.name!=='Runner') state.userName = r.name;
+    if(r.streak!=null) state.streak = r.streak;
+    if(r.total_sessions!=null && r.total_sessions>(state.totalSess||0)) state.totalSess = r.total_sessions;
+    if(r.life_km!=null){ const v=parseFloat(r.life_km)||0; if(v>(state.lifeDist||0)) state.lifeDist=v; }
+    if(r.total_focus_mins!=null && r.total_focus_mins>(state.totalFocusTime||0)) state.totalFocusTime=r.total_focus_mins;
+    if(r.state_json){
+      try{
+        const remote=JSON.parse(r.state_json);
+        const remoteTs=remote._savedAt||0, localTs=state._savedAt||0;
+        if(remoteTs>localTs){
+          const localNotes=state.sessionNotes||[], localHistory=state.sessionHistory||[], localLog=state.dailyLog||{};
+          delete remote._savedAt;
+          Object.assign(state,remote);
+          if(localHistory.length>(state.sessionHistory||[]).length) state.sessionHistory=localHistory;
+          if(localNotes.length>(state.sessionNotes||[]).length) state.sessionNotes=localNotes;
+          Object.keys(localLog).forEach(k=>{ if(!state.dailyLog[k]) state.dailyLog[k]=localLog[k]; });
+        }
+      }catch{}
+    }
+    state.userEmail=email; state.emailCollected=true;
+    save(); renderStats(); checkAch();
+    (document.getElementById('lb-name')||{}).textContent=state.userName||'Runner';
+    showLoggedInProfile();
+    renderHeatmap();
+    status.style.color='var(--accent)';
+    showNotif('👋 Welcome back, '+(state.userName||'Runner')+'!','Your progress has been restored.');
+  }catch(e){
+    status.style.color='var(--warn)';
+    status.textContent='Could not connect. Check your internet.';
+  }
+  btn.textContent='LOG IN'; btn.disabled=false;
+}
+
+async function doSignup(){
+  const nameEl   = document.getElementById('signup-name');
+  const emailEl  = document.getElementById('signup-email');
+  const status   = document.getElementById('signup-status');
+  const btn      = document.getElementById('signup-btn');
+  if(!emailEl||!status) return;
+  const name  = (nameEl?nameEl.value.trim():'')||'Runner';
+  const email = emailEl.value.trim().toLowerCase();
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    status.style.color='var(--warn)';
+    status.textContent='⚠️ Enter a valid email address.'; return;
+  }
+  btn.textContent='Creating…'; btn.disabled=true;
+  status.textContent='';
+  try{
+    // Check if email already exists
+    const checkRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/Sign-ups?email=eq.${encodeURIComponent(email)}&select=email&limit=1`,
+      { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
+    );
+    const existing = await checkRes.json();
+    if(existing && existing.length>0){
+      status.style.color='var(--warn)';
+      status.textContent='Email already registered. Use Log In instead!';
+      btn.textContent='CREATE ACCOUNT'; btn.disabled=false; return;
+    }
+    // Create account
+    state.userName=name; state.userEmail=email; state.emailCollected=true; save();
+    await pushUserState();
+    (document.getElementById('lb-name')||{}).textContent=name;
+    showLoggedInProfile();
+    showNotif('🎉 Welcome to Runodoro, '+name+'!','Your account is live.');
+    status.style.color='var(--accent)';
+    status.textContent='Account created!';
+  }catch(e){
+    status.style.color='var(--warn)';
+    status.textContent='Could not create account. Check your internet.';
+  }
+  btn.textContent='CREATE ACCOUNT'; btn.disabled=false;
+}
+
+function doLogout(){
+  if(!confirm('Log out? Your local progress stays on this device.')) return;
+  state.userEmail=''; state.emailCollected=false; save();
+  showAuthPanel(); switchAuthTab('login');
+  showNotif('👋 Logged out','Your local data is still here');
 }
 
 /* ── Audio ── */
@@ -3780,9 +4039,11 @@ async function loadHeroStats(){
     if(!rows||rows.length===0) return;
     const total = rows.reduce((sum,r)=>sum+parseFloat(r.weekly_km||0),0);
     const el = document.getElementById('hero-km-count');
-    if(el && total > 0) el.textContent = total.toFixed(1);
-    else if(el) el.textContent = '0';
-  } catch(e){}
+    if(el) el.textContent = total > 0 ? total.toFixed(1) : '0';
+  } catch(e){
+    const el = document.getElementById('hero-km-count');
+    if(el) el.textContent = '0';
+  }
 }
 // Load on page open
 setTimeout(loadHeroStats, 800);
