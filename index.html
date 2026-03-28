@@ -1628,11 +1628,25 @@ function handleDayReset(){
   const wk=getWeekKey();
   // Weekly reset
   if(state.lastWeek!==wk){ state.weekDist=0; state.lastWeek=wk; }
-  // Daily reset
+  // Daily reset — skip if already ran today
   if(state.lastDate===t) return;
-  if(state.lastDate) state.streak = daysBetween(state.lastDate,t)===1 ? state.streak+1 : 1;
-  state.todayDist=0; state.todayTime=0; state.todaySess=0; state.lastDate=t;
+  const days = state.lastDate ? daysBetween(state.lastDate,t) : 0;
+  const streakBroke = days > 1;
+  if(state.lastDate){
+    if(days===1){
+      // Ran yesterday — streak continues (will increment when session done)
+      // Don't increment here, only increment when session actually completes
+    } else if(days > 1){
+      // Missed days — streak breaks
+      state.streak = 0;
+    }
+  }
+  state.todayDist=0; state.todayTime=0; state.todaySess=0;
   save();
+  // Always push to Supabase on day reset so cron has accurate streak + last_session_date
+  if(state.userEmail){
+    setTimeout(()=>pushUserState(), 1000);
+  }
 }
 
 /* ── Supabase helpers ── */
@@ -2120,7 +2134,14 @@ function finishSession(){
     // Set lastDate and ensure streak is at least 1
     const prev=state.lastDate; const today=todayISO();
     if(prev!==today){
-      state.streak = prev && daysBetween(prev,today)===1 ? state.streak+1 : 1;
+      const daysSinceLast = prev ? daysBetween(prev,today) : 999;
+      if(daysSinceLast===1){
+        state.streak = (state.streak||0) + 1; // consecutive day
+      } else if(daysSinceLast>1){
+        state.streak = 1; // broke — restart
+      } else {
+        state.streak = Math.max(state.streak||0, 1);
+      }
     }
     state.lastDate=today;
     logToHeatmap(dist);
@@ -3754,28 +3775,59 @@ async function doLogin(){
       btn.textContent='LOG IN'; btn.disabled=false; return;
     }
     const r = rows[0];
-    // Restore state from Supabase
-    state.userEmail = email;
-    if(r.name && r.name!=='Runner') state.userName = r.name;
-    if(r.streak!=null) state.streak = r.streak;
-    if(r.total_sessions!=null && r.total_sessions>(state.totalSess||0)) state.totalSess = r.total_sessions;
-    if(r.life_km!=null){ const v=parseFloat(r.life_km)||0; if(v>(state.lifeDist||0)) state.lifeDist=v; }
-    if(r.total_focus_mins!=null && r.total_focus_mins>(state.totalFocusTime||0)) state.totalFocusTime=r.total_focus_mins;
+    const isSameEmail = (state.userEmail||'').toLowerCase() === email;
+
     if(r.state_json){
       try{
-        const remote=JSON.parse(r.state_json);
-        const remoteTs=remote._savedAt||0, localTs=state._savedAt||0;
-        if(remoteTs>localTs){
-          const localNotes=state.sessionNotes||[], localHistory=state.sessionHistory||[], localLog=state.dailyLog||{};
-          delete remote._savedAt;
-          Object.assign(state,remote);
-          if(localHistory.length>(state.sessionHistory||[]).length) state.sessionHistory=localHistory;
-          if(localNotes.length>(state.sessionNotes||[]).length) state.sessionNotes=localNotes;
-          Object.keys(localLog).forEach(k=>{ if(!state.dailyLog[k]) state.dailyLog[k]=localLog[k]; });
+        const remote = JSON.parse(r.state_json);
+        delete remote._savedAt;
+
+        if(isSameEmail){
+          // Same account — only restore if remote is newer
+          const remoteTs = (JSON.parse(rows[0].state_json)||{})._savedAt||0;
+          const localTs  = state._savedAt||0;
+          if(remoteTs > localTs){
+            Object.assign(state, remote);
+          }
+        } else {
+          // DIFFERENT account — ALWAYS load their data, wipe local
+          // Keep nothing from the previous local state
+          const freshState = Object.assign({}, remote);
+          freshState.userEmail = email;
+          freshState.emailCollected = true;
+          // Replace entire state
+          Object.keys(state).forEach(k => delete state[k]);
+          Object.assign(state, freshState);
         }
-      }catch{}
+      } catch(e){ console.warn('state_json parse error', e); }
+    } else {
+      // No state_json — build from individual columns
+      if(!isSameEmail){
+        // Reset to fresh state for this new account
+        const fresh = {
+          version:5, userName: r.name||'Runner', userEmail: email,
+          todayDist:0, todayTime:0, todaySess:0,
+          weekDist: parseFloat(r.weekly_km||0),
+          lifeDist: parseFloat(r.life_km||0),
+          totalSess: r.total_sessions||0,
+          totalFocusTime: r.total_focus_mins||0,
+          streak: r.streak||0,
+          lastDate: r.last_session_date||null,
+          achievements: [], terrain:'forest', sessionNotes:[], dailyLog:{},
+          sessionHistory:[], emailCollected:true,
+        };
+        Object.keys(state).forEach(k => delete state[k]);
+        Object.assign(state, fresh);
+      } else {
+        // Same email, just update fields
+        if(r.streak!=null) state.streak=r.streak;
+        if(r.name&&r.name!=='Runner') state.userName=r.name;
+      }
     }
-    state.userEmail=email; state.emailCollected=true;
+
+    // Always set email and collected flag
+    state.userEmail = email;
+    state.emailCollected = true;
     save(); renderStats(); checkAch();
     (document.getElementById('lb-name')||{}).textContent=state.userName||'Runner';
     showLoggedInProfile();
