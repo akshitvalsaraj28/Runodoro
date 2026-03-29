@@ -838,23 +838,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <h2 class="ls-title">Questions <span class="acc">Answered</span></h2>
       <div style="margin-top:32px;display:flex;flex-direction:column;gap:4px;" id="faq-list">
         <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">Is Runodoro free? <span class="faq-arrow">↓</span></button>
+          <button class="faq-q faq-btn" onclick="toggleFaq(this)">Is Runodoro free? <span class="faq-arrow">↓</span></button>
           <div class="faq-a">The core timer, streaks, heatmap and leaderboard are free — no credit card, no ads. Advanced features are coming soon for power users.</div>
         </div>
         <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">What is the km system? <span class="faq-arrow">↓</span></button>
+          <button class="faq-q faq-btn" onclick="toggleFaq(this)">What is the km system? <span class="faq-arrow">↓</span></button>
           <div class="faq-a">Every focus session earns you kilometers — Sprint gives +1 kilometer, Standard +3 kilometers, Deep Focus +5 kilometers. You're running a mental marathon. Hit daily goals of 5, 10, 21, or 42 kilometers per day.</div>
         </div>
         <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">Does my data save between sessions? <span class="faq-arrow">↓</span></button>
+          <button class="faq-q faq-btn" onclick="toggleFaq(this)">Does my data save between sessions? <span class="faq-arrow">↓</span></button>
           <div class="faq-a">Yes — everything is saved locally in your browser. Your streaks, km, achievements and notes persist automatically. No account needed.</div>
         </div>
         <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">What are streak reminders? <span class="faq-arrow">↓</span></button>
+          <button class="faq-q faq-btn" onclick="toggleFaq(this)">What are streak reminders? <span class="faq-arrow">↓</span></button>
           <div class="faq-a">If you leave your email, we send you a reminder at 8pm on any day you haven't run yet. Just a friendly nudge — no spam, unsubscribe anytime.</div>
         </div>
         <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">Can I use it on my phone? <span class="faq-arrow">↓</span></button>
+          <button class="faq-q faq-btn" onclick="toggleFaq(this)">Can I use it on my phone? <span class="faq-arrow">↓</span></button>
           <div class="faq-a">Yes — Runodoro is fully responsive and works great on mobile browsers. Add it to your home screen for the best experience.</div>
         </div>
       </div>
@@ -1668,17 +1668,8 @@ async function sbFetch(path, opts={}) {
 }
 
 async function getSignupCount() {
-  const data = await sbFetch('/Sign-ups?select=id', {
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Range-Unit': 'items',
-      'Range': '0-0',
-      'Prefer': 'count=exact',
-    },
-    method: 'GET',
-  });
-  // Use Content-Range header trick via HEAD
+  // Use a HEAD request with Prefer: count=exact — Supabase returns the total
+  // in the Content-Range header (e.g. "0-0/142") without transferring any rows.
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups?select=id`, {
       method:'HEAD',
@@ -1751,18 +1742,16 @@ async function pushUserState(){
     if(!res.ok){
       const t=await res.text();
       console.warn('pushUserState failed:',res.status,t);
-      // Show error in app so we can debug
-      if(location.hostname !== 'localhost'){
+      // Only surface to user for genuine server errors (4xx/5xx), not network hiccups
+      if(location.hostname !== 'localhost' && res.status >= 400 && res.status < 500){
         showNotif('⚠️ Sync failed: '+res.status, t.slice(0,100), true);
       }
     } else {
       console.log('pushUserState success');
     }
   } catch(e){
+    // Network error (offline, timeout, etc.) — log silently, no user toast
     console.warn('pushUserState error:',e.message);
-    if(location.hostname !== 'localhost'){
-      showNotif('⚠️ Sync error', e.message, true);
-    }
   }
 }
 
@@ -1820,13 +1809,14 @@ async function pullUserState(){
           console.log('State restored from Supabase (remote newer)');
         } else {
           console.log('Local state is newer — keeping local');
-          // Still let admin streak overrides through
+          // Let genuine admin streak overrides through, but NOT normal 1-unit
+          // differences that are just cross-device sync lag (e.g. ran on device A,
+          // remote hasn't updated yet on device B — would roll back a correct streak).
+          // We require a gap of ≥2 to be confident it is an intentional admin edit.
           if(r.streak != null && r.streak !== state.streak){
-            // Only override if significantly different (admin edit)
-            // Admin would set a different value intentionally
             const localStreak = state.streak || 0;
             const remoteStreak = r.streak || 0;
-            if(Math.abs(remoteStreak - localStreak) > 0){
+            if(Math.abs(remoteStreak - localStreak) >= 2){
               state.streak = remoteStreak;
               if(r.name && r.name !== 'Runner') state.userName = r.name;
               save(); renderStats(); checkAch();
@@ -1943,6 +1933,11 @@ async function submitSignup(){
   stat.textContent  = result !== null ? '✅ You are in! Check your inbox for a welcome email soon.' : '⚠️ Could not save — check your connection.';
 
   state.userName = name;
+  if(result !== null){
+    // Mark email as collected so the in-app gate never fires for this user
+    state.userEmail = email;
+    state.emailCollected = true;
+  }
   save();
   btn.textContent="LET'S GO →"; btn.disabled=false;
   if(result !== null) setTimeout(()=>goTo('screen-study'), 1000);
@@ -2211,7 +2206,7 @@ function renderLiveProgress(){
   (document.getElementById('s-dist')||{}).textContent=`${liveDistKm.toFixed(1)} km`;
   (document.getElementById('s-time')||{}).textContent=liveMins+' min';
   (document.getElementById('s-sess')||{}).textContent=state.todaySess+(sessionFrac>=1?1:0);
-  (document.getElementById('s-streak')||{}).textContent=`${state.streak||1}🔥`;
+  (document.getElementById('s-streak')||{}).textContent=state.streak>0?`${state.streak}🔥`:'—';
 }
 
 /* ── Stats ── */
@@ -2722,9 +2717,15 @@ function renderWeekBars(){
   const today=new Date().getDay(); // 0=Sun
   const todayIdx=today===0?6:today-1; // convert to Mon=0
 
-  // Build 7-day km data from state (we only have today's dist accurately)
-  // Show today's real data, rest as 0 (will fill as feature grows)
-  const data=days.map((_,i)=>i===todayIdx?(state.todayDist||0):0);
+  // Build 7-day km data from dailyLog (Mon=0 … Sun=6)
+  const weekStart=new Date(); weekStart.setDate(weekStart.getDate()-(todayIdx));
+  const data=days.map((_,i)=>{
+    const d=new Date(weekStart); d.setDate(weekStart.getDate()+i);
+    const key=d.toISOString().slice(0,10);
+    // For today, use max of logged km and live todayDist (handles mid-session state)
+    const logged=(state.dailyLog&&state.dailyLog[key])?state.dailyLog[key].km||0:0;
+    return i===todayIdx ? Math.max(logged, state.todayDist||0) : logged;
+  });
   const maxKm=Math.max(...data,3); // at least 3 for scale
 
   bars.innerHTML=''; labels.innerHTML='';
@@ -3504,11 +3505,10 @@ function scheduleStreakReminder(){
   const target = new Date();
   target.setHours(20,0,0,0);
   let delay = target - now;
-  if(delay < 0) delay += 24*60*60*1000; // tomorrow 8pm
+  if(delay < 0) delay += 24*60*60*1000; // schedule for tomorrow 8pm if already past
 
-  // Cap at 2 hours for UX (so it fires within session)
-  const fireDelay = Math.min(delay, 2*60*60*1000);
-
+  // No cap — always fires at real 8pm local time.
+  // Note: setTimeout has a ~24.8 day max; delay is always <24h so this is safe.
   setTimeout(()=>{
     const stillNoRun = state.lastDate !== todayISO();
     if(stillNoRun && state.streak > 0){
@@ -3518,7 +3518,7 @@ function scheduleStreakReminder(){
         tag: 'streak-reminder',
       });
     }
-  }, fireDelay);
+  }, delay);
 }
 
 /* ── Legal popup ── */
@@ -3985,8 +3985,8 @@ if('serviceWorker' in navigator){
 document.addEventListener('keydown', e=>{
   if(e.code==='Space' && e.target.tagName!=='TEXTAREA' && e.target.tagName!=='INPUT'){
     e.preventDefault();
-    const appVisible = document.getElementById('screen-app').style.opacity==='1' ||
-      getComputedStyle(document.getElementById('screen-app')).opacity==='1';
+    // screen-app is visible when it has the 'active' class (set by goTo())
+    const appVisible = document.getElementById('screen-app').classList.contains('active');
     if(!appVisible) return;
     if(running) pauseTimer();
     else startTimer();
@@ -4081,20 +4081,22 @@ function toggleFaq(btn){
 
 /* ── Hero live community km ── */
 async function loadHeroStats(){
+  const el   = document.getElementById('hero-km-count');
+  const pill = document.getElementById('hero-stats');
   try{
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/Sign-ups?select=weekly_km`,
       { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
     );
-    if(!res.ok) return;
+    if(!res.ok) throw new Error('fetch failed');
     const rows = await res.json();
-    if(!rows||rows.length===0) return;
+    if(!rows||rows.length===0){ if(pill) pill.style.display='none'; return; }
     const total = rows.reduce((sum,r)=>sum+parseFloat(r.weekly_km||0),0);
-    const el = document.getElementById('hero-km-count');
-    if(el) el.textContent = total > 0 ? total.toFixed(1) : '0';
+    if(total <= 0){ if(pill) pill.style.display='none'; return; }
+    if(el) el.textContent = total.toFixed(1);
   } catch(e){
-    const el = document.getElementById('hero-km-count');
-    if(el) el.textContent = '0';
+    // Supabase unreachable — hide pill so it never shows '0 km' or stale '—'
+    if(pill) pill.style.display='none';
   }
 }
 // Load on page open
