@@ -612,6 +612,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .forest-preview::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(93,252,141,0.12) 100%);}
 .t-btn.active .t-preview{filter:brightness(1.2);}
 .t-btn:hover .t-preview{filter:brightness(1.1);}
+.t-unlock-badge{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;letter-spacing:.5px;color:rgba(255,255,255,0.5);background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:3px 8px;pointer-events:none;display:none;}
+.t-btn.locked{opacity:0.45;cursor:not-allowed;}
+.t-btn.locked:hover{transform:none;box-shadow:none;border-color:var(--border);}
+.t-btn.locked .t-unlock-badge{display:block;}
+.t-btn.locked .t-preview{filter:grayscale(1) brightness(0.5);}
 /* Road preview lines on each thumbnail */
 .t-preview::before{z-index:2;}
 
@@ -1065,22 +1070,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="sec-title">🗺️ Study <span>Trail</span></div>
       <div class="terrain-desc" id="terrain-desc">Running through a misty forest at night — trees loom in the darkness, the air is cool and still.</div>
       <div class="terrain-grid">
-        <button class="t-btn" data-terrain="city">
+        <button class="t-btn" data-terrain="city" data-unlock="10">
           <div class="t-preview city-preview"></div>
           <div class="t-info"><div class="t-icon">🌆</div><div class="t-name">City Night</div><div class="t-vibe">Urban grind · neon lights</div></div>
+          <div class="t-unlock-badge" id="unlock-city">🔒 10 km</div>
           <div class="t-active-bar"></div>
         </button>
-        <button class="t-btn" data-terrain="mountain">
+        <button class="t-btn" data-terrain="mountain" data-unlock="50">
           <div class="t-preview mountain-preview"></div>
           <div class="t-info"><div class="t-icon">🏔️</div><div class="t-name">Mountain</div><div class="t-vibe">Peak focus · thin air</div></div>
+          <div class="t-unlock-badge" id="unlock-mountain">🔒 50 km</div>
           <div class="t-active-bar"></div>
         </button>
-        <button class="t-btn" data-terrain="desert">
+        <button class="t-btn" data-terrain="desert" data-unlock="100">
           <div class="t-preview desert-preview"></div>
           <div class="t-info"><div class="t-icon">🏜️</div><div class="t-name">Desert</div><div class="t-vibe">Heat & silence · endless road</div></div>
+          <div class="t-unlock-badge" id="unlock-desert">🔒 100 km</div>
           <div class="t-active-bar"></div>
         </button>
-        <button class="t-btn active" data-terrain="forest">
+        <button class="t-btn active" data-terrain="forest" data-unlock="0">
           <div class="t-preview forest-preview"></div>
           <div class="t-info"><div class="t-icon">🌲</div><div class="t-name">Forest</div><div class="t-vibe">Night trail · deep focus</div></div>
           <div class="t-active-bar"></div>
@@ -1682,11 +1690,29 @@ async function getSignupCount() {
 }
 
 async function insertSignup(name, email) {
-  return sbFetch('/Sign-ups', {
-    method:'POST',
-    prefer:'return=minimal',
-    body: JSON.stringify({name, email: email||null}),
-  });
+  // Use upsert (on_conflict=email) so a duplicate email gets a friendly merge
+  // instead of a 409 that surfaces as "Could not save — check your connection."
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups?on_conflict=email`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({ name, email: email||null }),
+    });
+    if(!res.ok){
+      const txt = await res.text();
+      console.warn('insertSignup failed:', res.status, txt);
+      return null;
+    }
+    return true; // success (204 No Content is expected for return=minimal)
+  } catch(e) {
+    console.warn('insertSignup error:', e.message);
+    return null;
+  }
 }
 
 // ── Full state sync via Supabase ──
@@ -1928,13 +1954,33 @@ async function submitSignup(){
   btn.disabled=true; btn.textContent='Joining…';
   stat.textContent='';
 
+  // First check if email already exists so we can show a helpful message
+  let alreadyExists = false;
+  try {
+    const check = await fetch(
+      `${SUPABASE_URL}/rest/v1/Sign-ups?email=eq.${encodeURIComponent(email)}&select=email&limit=1`,
+      { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
+    );
+    const rows = await check.json();
+    if(rows && rows.length > 0) alreadyExists = true;
+  } catch{}
+
+  if(alreadyExists){
+    stat.style.color='var(--accent)';
+    stat.textContent='👋 Looks like you are already registered! Heading in…';
+    state.userName = name; state.userEmail = email; state.emailCollected = true;
+    save();
+    btn.textContent="LET'S GO →"; btn.disabled=false;
+    setTimeout(()=>goTo('screen-study'), 1200);
+    return;
+  }
+
   const result = await insertSignup(name, email);
   stat.style.color = result !== null ? 'var(--accent)' : 'var(--warn)';
   stat.textContent  = result !== null ? '✅ You are in! Check your inbox for a welcome email soon.' : '⚠️ Could not save — check your connection.';
 
   state.userName = name;
   if(result !== null){
-    // Mark email as collected so the in-app gate never fires for this user
     state.userEmail = email;
     state.emailCollected = true;
   }
@@ -2011,6 +2057,7 @@ function launchApp(){
   renderClock();
   renderStats();
   updateGoalInfo();
+  refreshTerrainLocks();
   goTo('screen-app');
   // Scroll app to top
   setTimeout(()=>{
@@ -2141,7 +2188,7 @@ function finishSession(){
     state.lastDate=today;
     logToHeatmap(dist);
     logSessionHistory(dist, mode);
-    save(); renderStats(); playSound(); showCelebrate('🎉'); hideMini();
+    save(); renderStats(); refreshTerrainLocks(); playSound(); showCelebrate('🎉'); hideMini();
     // Check personal records (after save so todayDist is updated)
     setTimeout(()=>checkPR(dist), 2200);
     renderHeatmap();
@@ -2353,8 +2400,27 @@ const TERRAIN_DESCS={
   desert:   'An empty highway stretching into infinity — heat shimmer, silence, pure mental grit.',
   forest:   'Running through a misty forest at night — trees loom in the darkness, the air is cool and still.',
 };
+// Terrain unlock thresholds (lifetime km)
+const TERRAIN_UNLOCKS = { forest:0, city:10, mountain:50, desert:100 };
+
+function refreshTerrainLocks(){
+  const life = state.lifeDist || 0;
+  document.querySelectorAll('.t-btn').forEach(btn=>{
+    const required = parseInt(btn.dataset.unlock||'0', 10);
+    const unlocked = life >= required;
+    btn.classList.toggle('locked', !unlocked);
+    btn.disabled = !unlocked;
+  });
+}
+
 document.querySelectorAll('.t-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
+    const required = parseInt(btn.dataset.unlock||'0', 10);
+    const life = state.lifeDist || 0;
+    if(life < required){
+      showNotif('🔒 Terrain locked', `Run ${required} km lifetime to unlock — you have ${life.toFixed(1)} km`);
+      return;
+    }
     document.querySelectorAll('.t-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     state.terrain=btn.dataset.terrain;
@@ -2728,6 +2794,14 @@ function renderWeekBars(){
   });
   const maxKm=Math.max(...data,3); // at least 3 for scale
 
+  // Empty state — new user with no sessions this week
+  const hasAnyData = data.some(km=>km>0);
+  if(!hasAnyData){
+    bars.innerHTML=`<div style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;height:52px;gap:4px;"><div style="font-size:11px;color:var(--muted);">No runs this week yet</div><div style="font-size:10px;color:rgba(255,255,255,0.2);">Complete a session to start your chart</div></div>`;
+    labels.innerHTML='';
+    return;
+  }
+
   bars.innerHTML=''; labels.innerHTML='';
   data.forEach((km,i)=>{
     const heightPct=Math.max(4,(km/maxKm)*100);
@@ -3002,9 +3076,12 @@ function drawShareCard(canvas){
   ctx.fillText('WEEKLY FOCUS DISTANCE',LP+18,112);
 
   // Name — large, 52px equivalent scaled to 2x canvas
+  // maxWidth guard: clamp to left panel width so long names never overflow into right panel
   ctx.font='800 104px Arial';
   ctx.fillStyle='#ffffff';
-  ctx.fillText(state.userName||'You',LP,222);
+  const nameMaxW = DX - LP - 40; // left panel width minus some breathing room
+  const rawName  = state.userName||'You';
+  ctx.fillText(rawName, LP, 222, nameMaxW);
 
   // Big KM
   const km=state.weekDist.toFixed(1);
@@ -3768,6 +3845,12 @@ async function doLogin(){
       `${SUPABASE_URL}/rest/v1/Sign-ups?email=eq.${encodeURIComponent(email)}&select=*&limit=1`,
       { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
     );
+    // Distinguish network failure (res not ok / fetch throws) from "email not found"
+    if(!res.ok){
+      status.style.color='var(--warn)';
+      status.textContent='⚠️ Could not connect — check your internet and try again.';
+      btn.textContent='LOG IN'; btn.disabled=false; return;
+    }
     const rows = await res.json();
     if(!rows||rows.length===0){
       status.style.color='var(--warn)';
@@ -3784,7 +3867,9 @@ async function doLogin(){
 
         if(isSameEmail){
           // Same account — only restore if remote is newer
-          const remoteTs = (JSON.parse(rows[0].state_json)||{})._savedAt||0;
+          // Read _savedAt from the already-parsed `remote` object before we deleted it
+          const rawTs    = JSON.parse(rows[0].state_json)||{};
+          const remoteTs = rawTs._savedAt||0;
           const localTs  = state._savedAt||0;
           if(remoteTs > localTs){
             Object.assign(state, remote);
@@ -3835,8 +3920,9 @@ async function doLogin(){
     status.style.color='var(--accent)';
     showNotif('👋 Welcome back, '+(state.userName||'Runner')+'!','Your progress has been restored.');
   }catch(e){
+    // Only reaches here on a true network failure (fetch itself threw)
     status.style.color='var(--warn)';
-    status.textContent='Could not connect. Check your internet.';
+    status.textContent='⚠️ Could not connect — check your internet and try again.';
   }
   btn.textContent='LOG IN'; btn.disabled=false;
 }
@@ -4041,9 +4127,11 @@ async function submitReview(){
 function checkReviewPrompt(){
   if(state.reviewDone) return;
   if((state.reviewDismissCount||0) >= 3) return;
-  // Show after 7 days streak OR 10 total sessions
-  const shouldShow = (state.streak||0) >= 7 || (state.totalSess||0) >= 10;
-  if(shouldShow) setTimeout(showReviewPrompt, 4000);
+  // Show after 7-day streak OR (10+ sessions AND 10+ lifetime km)
+  // The km gate filters out people who opened the app 10 times but never actually ran
+  const hasStreak   = (state.streak||0) >= 7;
+  const hasVolume   = (state.totalSess||0) >= 10 && (state.lifeDist||0) >= 10;
+  if(hasStreak || hasVolume) setTimeout(showReviewPrompt, 4000);
 }
 
 /* ── Reset all data ── */
