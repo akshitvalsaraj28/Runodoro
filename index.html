@@ -3796,6 +3796,20 @@ async function doLogin(){
   }
   btn.textContent='Checking…'; btn.disabled=true;
   status.textContent='';
+
+  const isSameEmail = (state.userEmail||'').toLowerCase() === email;
+
+  // Always wipe local state when switching to a different account
+  if(!isSameEmail){
+    const fresh = DS();
+    fresh.userEmail = email;
+    fresh.emailCollected = true;
+    Object.keys(state).forEach(k => delete state[k]);
+    Object.assign(state, fresh);
+    save();
+  }
+
+  // Try to load from Supabase
   try{
     const url = `${SUPABASE_URL}/rest/v1/Sign-ups?email=eq.${encodeURIComponent(email)}&select=*&limit=1`;
     const res = await fetch(url, {
@@ -3804,76 +3818,78 @@ async function doLogin(){
         'Authorization': `Bearer ${SUPABASE_KEY}`,
       }
     });
+
     if(!res.ok){
       const txt = await res.text();
+      // State is already wiped/set above — just warn
       status.style.color='var(--warn)';
-      status.textContent=`⚠️ Server error ${res.status} — ${txt.slice(0,120)}`;
-      btn.textContent='LOG IN'; btn.disabled=false; return;
+      status.textContent=`⚠️ Server error ${res.status}: ${txt.slice(0,100)}`;
+      btn.textContent='LOG IN'; btn.disabled=false;
+      // Still update UI with fresh state
+      renderStats(); renderHeatmap(); updateSaveNudge();
+      showLoggedInProfile();
+      return;
     }
+
     const rows = await res.json();
     if(!rows||rows.length===0){
       status.style.color='var(--warn)';
-      status.textContent='No account found with that email. Sign up instead!';
+      status.textContent='No account found with that email. Sign up to create one!';
+      // Undo the wipe — restore previous state if same device
+      if(!isSameEmail){
+        const prev = DS();
+        Object.keys(state).forEach(k => delete state[k]);
+        Object.assign(state, prev);
+        save();
+      }
       btn.textContent='LOG IN'; btn.disabled=false; return;
     }
-    const r = rows[0];
-    const isSameEmail = (state.userEmail||'').toLowerCase() === email;
 
+    const r = rows[0];
+
+    // Load full state from state_json blob if available
     if(r.state_json){
       try{
         const remote = JSON.parse(r.state_json);
+        const savedAt = remote._savedAt || 0;
         delete remote._savedAt;
-
-        if(isSameEmail){
-          const rawTs    = JSON.parse(rows[0].state_json)||{};
-          const remoteTs = rawTs._savedAt||0;
-          const localTs  = state._savedAt||0;
-          if(remoteTs > localTs){
-            Object.assign(state, remote);
-          }
-        } else {
-          const freshState = Object.assign({}, remote);
-          freshState.userEmail = email;
-          freshState.emailCollected = true;
+        if(!isSameEmail || savedAt > (state._savedAt||0)){
           Object.keys(state).forEach(k => delete state[k]);
-          Object.assign(state, freshState);
+          Object.assign(state, remote);
         }
       } catch(e){ console.warn('state_json parse error', e); }
     } else {
-      if(!isSameEmail){
-        const fresh = {
-          version:5, userName: r.name||'Runner', userEmail: email,
-          todayDist:0, todayTime:0, todaySess:0,
-          weekDist: parseFloat(r.weekly_km||0),
-          lifeDist: parseFloat(r.life_km||0),
-          totalSess: r.total_sessions||0,
-          totalFocusTime: r.total_focus_mins||0,
-          streak: r.streak||0,
-          lastDate: r.last_session_date||null,
-          achievements: [], terrain:'forest', sessionNotes:[], dailyLog:{},
-          sessionHistory:[], emailCollected:true,
-        };
-        Object.keys(state).forEach(k => delete state[k]);
-        Object.assign(state, fresh);
-      } else {
-        if(r.streak!=null) state.streak=r.streak;
-        if(r.name&&r.name!=='Runner') state.userName=r.name;
-      }
+      // No blob — build state from individual columns
+      if(r.name) state.userName = r.name;
+      if(r.weekly_km) state.weekDist = parseFloat(r.weekly_km||0);
+      if(r.life_km)   state.lifeDist  = parseFloat(r.life_km||0);
+      if(r.total_sessions) state.totalSess = r.total_sessions;
+      if(r.streak)    state.streak = r.streak;
+      if(r.last_session_date) state.lastDate = r.last_session_date;
     }
 
+    // Always stamp the email and collected flag
     state.userEmail = email;
     state.emailCollected = true;
-    save(); renderStats(); checkAch();
-    (document.getElementById('lb-name')||{}).textContent=state.userName||'Runner';
+    save();
+
+    renderStats(); checkAch(); renderHeatmap(); updateSaveNudge();
+    (document.getElementById('lb-name')||{}).textContent = state.userName||'Runner';
     showLoggedInProfile();
-    renderHeatmap();
     status.style.color='var(--accent)';
-    showNotif('👋 Welcome back, '+(state.userName||'Runner')+'!','Your progress has been restored.');
-    updateSaveNudge();
-  }catch(e){
+    showNotif('👋 Welcome back, '+(state.userName||'Runner')+'!', 'Progress restored.');
+
+  } catch(e){
+    console.error('doLogin fetch error:', e);
+    // Even if Supabase is unreachable, the state is already switched
+    // So at minimum show them as logged in with cleared data
+    state.userEmail = email;
+    state.emailCollected = true;
+    save();
+    renderStats(); renderHeatmap(); updateSaveNudge();
+    showLoggedInProfile();
     status.style.color='var(--warn)';
-    status.textContent=`⚠️ Login failed: ${e.message||'unknown error'}`;
-    console.error('doLogin error:', e);
+    status.textContent=`⚠️ Logged in locally but could not reach server: ${e.message||'network error'}. Your data will sync when connection is restored.`;
   }
   btn.textContent='LOG IN'; btn.disabled=false;
 }
