@@ -749,43 +749,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
     <div class="float-quotes" id="float-quotes"></div>
 
-    <div class="scroll-hint" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;margin-top:32px;" onclick="document.getElementById('ls-what').scrollIntoView({behavior:'smooth'})">
+    <div class="scroll-hint" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;margin-top:32px;" onclick="document.getElementById('ls-why').scrollIntoView({behavior:'smooth'})">
       <span style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);">see how it works</span>
       <span style="font-size:20px;animation:bounce 1.6s ease-in-out infinite;display:block;">↓</span>
     </div>
   </section>
 
-  <!-- ── SECTION 2: WHAT IS POMODORO ── -->
-  <section class="land-section" id="ls-what">
-    <div class="land-section-inner">
-      <div class="ls-tag">THE METHOD</div>
-      <h2 class="ls-title">What is the<br><span class="acc">Pomodoro Technique?</span></h2>
-      <p class="ls-body">The Pomodoro Technique was developed by Francesco Cirillo in the late 1980s. The idea is devastatingly simple: <strong>work in focused sprints, then rest.</strong></p>
-      <div class="pomo-steps">
-        <div class="pomo-step"><div class="ps-num">01</div><div class="ps-text"><strong>Pick a task</strong><br>One thing. No multitasking.</div></div>
-        <div class="pomo-step"><div class="ps-num">02</div><div class="ps-text"><strong>Set a timer</strong><br>25 minutes of pure focus.</div></div>
-        <div class="pomo-step"><div class="ps-num">03</div><div class="ps-text"><strong>Work until it rings</strong><br>No phone. No tab switching.</div></div>
-        <div class="pomo-step"><div class="ps-num">04</div><div class="ps-text"><strong>Take a short break</strong><br>5 minutes. Breathe. Reset.</div></div>
-        <div class="pomo-step"><div class="ps-num">05</div><div class="ps-text"><strong>Repeat</strong><br>Every 4 rounds, take a longer break.</div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── SECTION 3: WHY IT WORKS ── -->
+  <!-- ── SECTION 2: WHY IT WORKS + MARATHON TWIST (merged) ── -->
   <section class="land-section land-section-alt" id="ls-why">
     <div class="land-section-inner">
-      <div class="ls-tag">THE SCIENCE</div>
-      <h2 class="ls-title">Why your brain<br><span class="acc">loves it</span></h2>
-      <div class="science-grid">
+      <div class="ls-tag">THE SCIENCE + THE TWIST</div>
+      <h2 class="ls-title">Why it<br><span class="acc">actually works</span></h2>
+      <p class="ls-body" style="margin-bottom:28px;">Work in focused sprints, then rest. <strong>The timer makes the decision for you</strong> — no negotiating, no procrastinating, just running.</p>
+      <div class="science-grid" style="margin-bottom:40px;">
         <div class="sci-card">
           <div class="sci-icon">🧠</div>
           <div class="sci-title">Eliminates Decision Fatigue</div>
-          <div class="sci-body">When the timer is running, the decision is already made. You work. No negotiating with yourself.</div>
+          <div class="sci-body">When the timer is running, the decision is made. You work. No negotiating with yourself.</div>
         </div>
         <div class="sci-card">
           <div class="sci-icon">⚡</div>
           <div class="sci-title">Beats Procrastination</div>
-          <div class="sci-body">25 minutes feels manageable. Your brain stops resisting and starts running. The hardest part is starting.</div>
+          <div class="sci-body">25 minutes feels manageable. Your brain stops resisting and starts running.</div>
         </div>
         <div class="sci-card">
           <div class="sci-icon">🎯</div>
@@ -795,24 +780,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         <div class="sci-card">
           <div class="sci-icon">🔋</div>
           <div class="sci-title">Preserves Mental Energy</div>
-          <div class="sci-body">Breaks are not laziness — they are recovery. Your focus muscle needs rest to stay sharp across a full day.</div>
+          <div class="sci-body">Breaks are not laziness — they are recovery. Your focus muscle needs rest to stay sharp.</div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- ── SECTION 4: THE MARATHON METAPHOR ── -->
-  <section class="land-section" id="ls-marathon">
-    <div class="land-section-inner" style="text-align:center;max-width:620px;">
-      <div class="ls-tag">THE RUNODORO TWIST</div>
-      <h2 class="ls-title">Focus like a<br><span class="acc">marathon runner</span></h2>
-      <p class="ls-body">Sprinting the whole race burns you out. Great marathoners run smart — steady pace, strategic effort, eyes on the finish line.<br><br>That is exactly how the best students and workers operate. <strong>Consistent, deliberate sessions beat frantic all-nighters every single time.</strong></p>
-      <div class="marathon-stats">
-        <div class="ms-item"><div class="ms-val" style="color:var(--accent)">+3 km</div><div class="ms-lbl">per 25-min session</div></div>
-        <div class="ms-div"></div>
-        <div class="ms-item"><div class="ms-val" style="color:var(--accent2)">21 km</div><div class="ms-lbl">= half marathon day</div></div>
-        <div class="ms-div"></div>
-        <div class="ms-item"><div class="ms-val" style="color:var(--warn)">42 km</div><div class="ms-lbl">= full marathon legend</div></div>
+      <div style="border-top:1px solid var(--border);padding-top:36px;text-align:center;">
+        <div class="ls-tag" style="margin-bottom:12px;">THE RUNODORO TWIST</div>
+        <p class="ls-body" style="max-width:520px;margin:0 auto 24px;"><strong>Every session earns you km.</strong> Consistent, deliberate sessions beat frantic all-nighters — just like a marathon runner beats a sprinter over 42 km.</p>
+        <div class="marathon-stats">
+          <div class="ms-item"><div class="ms-val" style="color:var(--accent)">+3 km</div><div class="ms-lbl">per 25-min session</div></div>
+          <div class="ms-div"></div>
+          <div class="ms-item"><div class="ms-val" style="color:var(--accent2)">21 km</div><div class="ms-lbl">= half marathon day</div></div>
+          <div class="ms-div"></div>
+          <div class="ms-item"><div class="ms-val" style="color:var(--warn)">42 km</div><div class="ms-lbl">= full marathon legend</div></div>
+        </div>
       </div>
     </div>
   </section>
@@ -958,6 +938,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:6px;">🏃 How the km system works</div>
       <div style="font-size:13px;color:var(--muted);line-height:1.6;">Every focus session earns you <strong style="color:var(--text);">km</strong> — Sprint <span style="color:var(--accent);">+1 km</span>, Standard <span style="color:var(--accent);">+3 km</span>, Deep Focus <span style="color:var(--accent);">+5 km</span>. Hit <strong style="color:var(--text);">42 km</strong> to complete a full mental marathon. Your runner moves in real time. <span style="color:var(--accent);font-weight:700;cursor:pointer;" onclick="document.getElementById('ls-marathon').scrollIntoView&&window.goTo&&goTo('screen-land')">Learn more ↗</span></div>
     </div>
+    <!-- Save data nudge — shown when no email saved -->
+    <div id="save-nudge" style="display:none;background:rgba(93,252,141,0.04);border:1px solid rgba(93,252,141,0.15);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--muted);">
+        <span style="font-size:15px;">💾</span>
+        <span>Your progress is saved locally — <strong style="color:var(--text);">add your email</strong> to back it up and join the leaderboard.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button onclick="openOverlay()" style="padding:5px 13px;border-radius:20px;border:none;background:var(--accent);color:#0d0f14;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;">Save it →</button>
+        <button onclick="dismissSaveNudge()" style="padding:5px 8px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">✕</button>
+      </div>
+    </div>
+
     <div class="app-quote"><strong id="aq-text">…</strong> — <span id="aq-author"></span></div>
 
     <!-- Clock -->
@@ -1070,10 +1062,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="sec-title">🗺️ Study <span>Trail</span></div>
       <div class="terrain-desc" id="terrain-desc">Running through a misty forest at night — trees loom in the darkness, the air is cool and still.</div>
       <div class="terrain-grid">
-        <button class="t-btn" data-terrain="city" data-unlock="10">
+        <button class="t-btn" data-terrain="city" data-unlock="0">
           <div class="t-preview city-preview"></div>
           <div class="t-info"><div class="t-icon">🌆</div><div class="t-name">City Night</div><div class="t-vibe">Urban grind · neon lights</div></div>
-          <div class="t-unlock-badge" id="unlock-city">🔒 10 km</div>
+          <div class="t-unlock-badge" id="unlock-city" style="display:none;">🔒 Locked</div>
           <div class="t-active-bar"></div>
         </button>
         <button class="t-btn" data-terrain="mountain" data-unlock="50">
@@ -1363,22 +1355,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
           <div style="font-size:11px;color:var(--muted);" id="ov-display-email">—</div>
         </div>
         <div style="display:flex;gap:8px;">
-          <button onclick="showEditProfile()" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✏️ Edit</button>
-          <button onclick="doLogout()" style="padding:6px 14px;border-radius:20px;border:1px solid rgba(245,87,124,0.3);background:none;color:var(--warn);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.background='rgba(245,87,124,0.1)'" onmouseout="this.style.background='none'">Log out</button>
+          <button onclick="showEditProfile()" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✏️ Edit name</button>
         </div>
       </div>
 
-      <!-- Edit profile inline -->
+      <!-- Edit profile inline — name only -->
       <div id="ov-edit-section" style="display:none;margin-bottom:16px;">
-        <div style="display:flex;gap:10px;margin-bottom:10px;">
-          <div class="field" style="flex:1;margin:0;"><label>Runner Name</label><input type="text" id="ov-name" placeholder="Your name…" maxlength="40" autocomplete="name"></div>
-          <div class="field" style="flex:1;margin:0;"><label>Email</label><input type="email" id="ov-email" placeholder="you@example.com" autocomplete="email" style="background:var(--surface2);color:var(--text);"></div>
+        <div style="margin-bottom:10px;">
+          <div class="field" style="margin:0;"><label>Runner Name</label><input type="text" id="ov-name" placeholder="Your name…" maxlength="40" autocomplete="name"></div>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="ov-submit" onclick="saveProfile()" style="flex:1;margin-bottom:0;">SAVE CHANGES</button>
+          <button class="ov-submit" onclick="saveProfile()" style="flex:1;margin-bottom:0;">SAVE NAME</button>
           <button onclick="hideEditProfile()" style="padding:12px 16px;border-radius:var(--radius);border:1px solid var(--border);background:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
         </div>
       </div>
+
+      <!-- Logout confirm inline -->
     </div>
 
     <!-- ── STATS SECTION ── -->
@@ -1477,7 +1469,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
     <div style="margin-top:0px;display:flex;justify-content:space-between;align-items:center;">
       <div class="ov-skip" onclick="closeOverlay()">Close →</div>
-      <button onclick="confirmResetData()" style="background:none;border:1px solid var(--warn);border-radius:20px;color:var(--warn);font-size:10px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Reset all data</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="doLogout()" style="background:none;border:1px solid var(--border);border-radius:20px;color:var(--muted);font-size:10px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.6;" onmouseover="this.style.opacity='1';this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.opacity='0.6';this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Switch account</button>
+        <button onclick="confirmResetData()" style="background:none;border:1px solid var(--warn);border-radius:20px;color:var(--warn);font-size:10px;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">Reset all data</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1527,7 +1522,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 */
 
 const SUPABASE_URL = 'https://tgloktbfdksxrawneedj.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_3maqnVWdaJl8YPNEv38i9A_RPVaV1hE';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnbG9rdGJmZGtzeHJhd25lZWRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMDMwODQsImV4cCI6MjA4ODg3OTA4NH0._Uyt9qijDz6-ku-jY5tW_qDGlhj9DdjwmsSceYJqjtU';
 
 /* ── Constants ── */
 const STORAGE_KEY = 'runodoro_v4';
@@ -2080,6 +2075,8 @@ function launchApp(){
   if(!state.tutorialSeen){
     setTimeout(showTutorial, 600);
   }
+  // Save nudge
+  updateSaveNudge();
 }
 
 /* ── Adjust time ── */
@@ -2401,7 +2398,7 @@ const TERRAIN_DESCS={
   forest:   'Running through a misty forest at night — trees loom in the darkness, the air is cool and still.',
 };
 // Terrain unlock thresholds (lifetime km)
-const TERRAIN_UNLOCKS = { forest:0, city:10, mountain:50, desert:100 };
+const TERRAIN_UNLOCKS = { forest:0, city:0, mountain:50, desert:100 };
 
 function refreshTerrainLocks(){
   const life = state.lifeDist || 0;
@@ -2929,6 +2926,7 @@ async function submitEmailGate(){
     state.userEmail = email;
     state.emailCollected = true;
     save();
+    updateSaveNudge();
     stat.style.color = 'var(--accent)';
     stat.textContent = '✅ You are in the pack!';
     setTimeout(()=>closeEmailGate(), 1200);
@@ -3690,30 +3688,27 @@ document.getElementById('legal-popup').addEventListener('click',function(e){
   if(e.target===this) closeLegalPopup();
 });
 
-function closeOverlay(){document.getElementById('ov-overlay').classList.remove('open');}
-async function saveProfile(){
-  const name  = (document.getElementById('ov-name').value.trim()||'Runner').slice(0,40);
-  const email = document.getElementById('ov-email').value.trim().toLowerCase();
-
-  // Validate email if provided
-  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    showNotif('⚠️ Invalid email','Please enter a valid email address',true); return;
-  }
-
-  // Save to local state
-  state.userName  = name;
-  if(email) state.userEmail = email || state.userEmail;
-  save();
-  (document.getElementById('lb-name')||{}).textContent = name;
-  // Update display in overlay
-  const dn = document.getElementById('ov-display-name');
-  const de = document.getElementById('ov-display-email');
-  if(dn) dn.textContent = name;
-  if(de) de.textContent = state.userEmail||'';
+function closeOverlay(){
+  document.getElementById('ov-overlay').classList.remove('open');
   hideEditProfile();
-  if(email){
+}
+async function saveProfile(){
+  const name = (document.getElementById('ov-name').value.trim()||'Runner').slice(0,40);
+
+  // Update name locally
+  state.userName = name;
+  save();
+
+  // Update UI immediately
+  (document.getElementById('lb-name')||{}).textContent = name;
+  const dn = document.getElementById('ov-display-name');
+  if(dn) dn.textContent = name;
+  hideEditProfile();
+
+  // Push updated name to Supabase if logged in
+  if(state.userEmail){
     try{
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups?on_conflict=email`, {
+      await fetch(`${SUPABASE_URL}/rest/v1/Sign-ups?on_conflict=email`, {
         method: 'POST',
         headers:{
           'apikey': SUPABASE_KEY,
@@ -3721,49 +3716,12 @@ async function saveProfile(){
           'Content-Type': 'application/json',
           'Prefer': 'resolution=merge-duplicates,return=minimal',
         },
-        body: JSON.stringify({
-          name, email,
-          weekly_km: parseFloat((state.weekDist||0).toFixed(2)),
-          total_sessions: state.totalSess||0,
-          streak: state.streak||0,
-          last_session_date: state.lastDate||null,
-          week_key: getWeekKey(),
-          updated_at: new Date().toISOString(),
-        }),
+        body: JSON.stringify({ name, email: state.userEmail, updated_at: new Date().toISOString() }),
       });
-      const txt = await res.text();
-      if(!res.ok){
-        console.error('Supabase error:', res.status, txt);
-        if(location.hostname !== 'localhost' && location.protocol !== 'file:'){
-          if(res.status===401||res.status===403){
-            showNotif('⚠️ Save failed','Please try again or contact runodoro@gmail.com',true);
-          } else {
-            showNotif('⚠️ Save failed: '+res.status, txt.slice(0,80), true);
-          }
-        }
-      } else {
-        state.emailCollected = true; save();
-        setTimeout(pushUserState, 200);
-        const pb2 = document.querySelector('.ov-submit');
-        if(pb2) pb2.textContent = 'EDIT PROFILE';
-        closeOverlay();
-        showNotif('✅ Profile saved!','Name and email live on the leaderboard.');
-      }
-    } catch(e){
-      console.error('Profile save failed:', e);
-      if(location.hostname !== 'localhost' && location.protocol !== 'file:'){
-        showNotif('⚠️ Could not save — check your connection.', '', true);
-      }
-    }
+    } catch(e){ console.warn('Name sync failed:', e.message); }
   }
 
-  const pb = document.querySelector('.ov-submit');
-  if(pb) pb.textContent = 'EDIT PROFILE';
-  // Only close and notify if no email (email flow closes in try/catch above)
-  if(!email){
-    closeOverlay();
-    showNotif('✅ Name Saved', 'Add your email to unlock leaderboard and reminders');
-  }
+  showNotif('✅ Name updated', state.userEmail ? 'Synced to the leaderboard.' : 'Add your email to join the leaderboard.');
 }
 
 /* ── Auth: Login / Signup / Logout ── */
@@ -3818,9 +3776,7 @@ function showEditProfile(){
   const ed = document.getElementById('ov-edit-section');
   if(ed) ed.style.display='block';
   const n = document.getElementById('ov-name');
-  const e = document.getElementById('ov-email');
-  if(n) n.value = state.userName||'';
-  if(e) e.value = state.userEmail||'';
+  if(n){ n.value = state.userName||''; n.focus(); }
 }
 
 function hideEditProfile(){
@@ -3841,14 +3797,17 @@ async function doLogin(){
   btn.textContent='Checking…'; btn.disabled=true;
   status.textContent='';
   try{
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/Sign-ups?email=eq.${encodeURIComponent(email)}&select=*&limit=1`,
-      { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
-    );
-    // Distinguish network failure (res not ok / fetch throws) from "email not found"
+    const url = `${SUPABASE_URL}/rest/v1/Sign-ups?email=eq.${encodeURIComponent(email)}&select=*&limit=1`;
+    const res = await fetch(url, {
+      headers:{
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+      }
+    });
     if(!res.ok){
+      const txt = await res.text();
       status.style.color='var(--warn)';
-      status.textContent='⚠️ Could not connect — check your internet and try again.';
+      status.textContent=`⚠️ Server error ${res.status} — ${txt.slice(0,120)}`;
       btn.textContent='LOG IN'; btn.disabled=false; return;
     }
     const rows = await res.json();
@@ -3866,8 +3825,6 @@ async function doLogin(){
         delete remote._savedAt;
 
         if(isSameEmail){
-          // Same account — only restore if remote is newer
-          // Read _savedAt from the already-parsed `remote` object before we deleted it
           const rawTs    = JSON.parse(rows[0].state_json)||{};
           const remoteTs = rawTs._savedAt||0;
           const localTs  = state._savedAt||0;
@@ -3875,20 +3832,15 @@ async function doLogin(){
             Object.assign(state, remote);
           }
         } else {
-          // DIFFERENT account — ALWAYS load their data, wipe local
-          // Keep nothing from the previous local state
           const freshState = Object.assign({}, remote);
           freshState.userEmail = email;
           freshState.emailCollected = true;
-          // Replace entire state
           Object.keys(state).forEach(k => delete state[k]);
           Object.assign(state, freshState);
         }
       } catch(e){ console.warn('state_json parse error', e); }
     } else {
-      // No state_json — build from individual columns
       if(!isSameEmail){
-        // Reset to fresh state for this new account
         const fresh = {
           version:5, userName: r.name||'Runner', userEmail: email,
           todayDist:0, todayTime:0, todaySess:0,
@@ -3904,13 +3856,11 @@ async function doLogin(){
         Object.keys(state).forEach(k => delete state[k]);
         Object.assign(state, fresh);
       } else {
-        // Same email, just update fields
         if(r.streak!=null) state.streak=r.streak;
         if(r.name&&r.name!=='Runner') state.userName=r.name;
       }
     }
 
-    // Always set email and collected flag
     state.userEmail = email;
     state.emailCollected = true;
     save(); renderStats(); checkAch();
@@ -3919,10 +3869,11 @@ async function doLogin(){
     renderHeatmap();
     status.style.color='var(--accent)';
     showNotif('👋 Welcome back, '+(state.userName||'Runner')+'!','Your progress has been restored.');
+    updateSaveNudge();
   }catch(e){
-    // Only reaches here on a true network failure (fetch itself threw)
     status.style.color='var(--warn)';
-    status.textContent='⚠️ Could not connect — check your internet and try again.';
+    status.textContent=`⚠️ Login failed: ${e.message||'unknown error'}`;
+    console.error('doLogin error:', e);
   }
   btn.textContent='LOG IN'; btn.disabled=false;
 }
@@ -3959,6 +3910,7 @@ async function doSignup(){
     (document.getElementById('lb-name')||{}).textContent=name;
     showLoggedInProfile();
     showNotif('🎉 Welcome to Runodoro, '+name+'!','Your account is live.');
+    updateSaveNudge();
     status.style.color='var(--accent)';
     status.textContent='Account created!';
   }catch(e){
@@ -3968,11 +3920,15 @@ async function doSignup(){
   btn.textContent='CREATE ACCOUNT'; btn.disabled=false;
 }
 
+function showLogoutConfirm(){ /* no-op — kept for safety */ }
+function hideLogoutConfirm(){ /* no-op */ }
 function doLogout(){
-  if(!confirm('Log out? Your local progress stays on this device.')) return;
-  state.userEmail=''; state.emailCollected=false; save();
-  showAuthPanel(); switchAuthTab('login');
-  showNotif('👋 Logged out','Your local data is still here');
+  // Just switch the overlay to the login tab so another account can sign in.
+  // doLogin() handles loading the new account's state on top of the current device.
+  showAuthPanel();
+  switchAuthTab('login');
+  const li = document.getElementById('login-email');
+  if(li){ li.value=''; setTimeout(()=>li.focus(),200); }
 }
 
 /* ── Audio ── */
@@ -4055,6 +4011,20 @@ function showNotif(title,body,warn=false){
 function showCelebrate(e){
   const el=document.createElement('div');el.className='celebrate';el.textContent=e;
   document.body.appendChild(el);setTimeout(()=>el.remove(),900);
+}
+
+/* ── Save nudge ── */
+function updateSaveNudge(){
+  const el = document.getElementById('save-nudge');
+  if(!el) return;
+  const dismissed = localStorage.getItem('save_nudge_dismissed');
+  const hasEmail  = !!(state.userEmail);
+  el.style.display = (!hasEmail && !dismissed) ? 'flex' : 'none';
+}
+function dismissSaveNudge(){
+  localStorage.setItem('save_nudge_dismissed','1');
+  const el = document.getElementById('save-nudge');
+  if(el) el.style.display='none';
 }
 
 /* ── Init ── */
