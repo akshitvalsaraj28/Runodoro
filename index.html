@@ -950,6 +950,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
 
+    <!-- Notification prompt — shown after 2nd session -->
+    <div id="notif-prompt" style="display:none;background:linear-gradient(135deg,rgba(93,252,141,0.08),rgba(123,110,246,0.08));border:1px solid rgba(93,252,141,0.2);border-radius:16px;padding:14px 16px;margin-bottom:16px;align-items:center;justify-content:space-between;gap:12px;">
+      <div class="notif-prompt-text">🔔 <strong>Never lose your streak</strong> — allow notifications and we'll remind you at 8pm on days you haven't run yet.</div>
+      <div class="notif-prompt-btns">
+        <button class="notif-allow" onclick="requestNotifPermission()">Allow</button>
+        <button class="notif-later" onclick="dismissNotifPrompt()">Later</button>
+      </div>
+    </div>
+
     <div class="app-quote"><strong id="aq-text">…</strong> — <span id="aq-author"></span></div>
 
     <!-- Clock -->
